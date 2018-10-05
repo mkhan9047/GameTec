@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".FragmentsPackages.AdminFragment">
+
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/logo" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:text="ADMINISTRATOR"
+        android:textColor="#000000"
+        android:id="@+id/role"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+
+  <!--  <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="22dp"
+        android:layout_marginStart="22dp"
+        android:scrollbarThumbVertical="@null"
+        android:scrollbarThumbHorizontal="@null"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+
+            >
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:foreground="?selectableItemBackground"
+                android:background="@drawable/btn_border"
+                android:id="@+id/btn_balance"
+                android:text="Balance" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:foreground="?selectableItemBackground"
+                android:background="@drawable/btn_border"
+                android:id="@+id/btn_alarm"
+                android:text="Alarm" />
+
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:foreground="?selectableItemBackground"
+                android:background="@drawable/btn_border"
+                android:id="@+id/btn_ticket"
+                android:text="Tickets" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:foreground="?selectableItemBackground"
+                android:background="@drawable/btn_border"
+                android:id="@+id/btn_gps"
+                android:text="GPS" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:foreground="?selectableItemBackground"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/btn_border"
+                android:id="@+id/btn_clock"
+                android:text="CLOCK" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:foreground="?selectableItemBackground"
+                android:background="@drawable/btn_border"
+                android:id="@+id/btn_door"
+                android:text="DOOR OPENING" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:foreground="?selectableItemBackground"
+                android:background="@drawable/btn_border"
+                android:id="@+id/btn_block"
+                android:text="BLOCK" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/btn_border"
+                android:foreground="?selectableItemBackground"
+                android:id="@+id/btn_percent"
+                android:text="Percent Control" />
+
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/btn_border"
+                android:foreground="?selectableItemBackground"
+                android:id="@+id/btn_reset"
+                android:text="RESET" />
+
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/btn_border"
+                android:foreground="?selectableItemBackground"
+                android:id="@+id/btn_bluetooth"
+                android:text="BLUETOOTH" />
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/btn_border"
+                android:foreground="?selectableItemBackground"
+                android:id="@+id/btn_sign_out"
+                android:text="SIGN OUT" />
+
+
+        </LinearLayout>
+
+    </ScrollView>-->
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:id="@+id/feature_recylerview"
+        android:layout_height="wrap_content">
+
+    </android.support.v7.widget.RecyclerView>
+</LinearLayout>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FragmentsPackages.GpsFragment">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/top_section"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="16dp"
+            android:background="#00000000"
+            android:foreground="?selectableItemBackground"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/bacl_arrow" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="GPS"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center_vertical"
+        android:layout_marginEnd="16dp"
+            android:background="#00000000"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/bacl_arrow"
+            android:visibility="invisible" />
+    </LinearLayout>
+
+
+    <!--map fragment-->
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_above="@id/bottom_section"
+        android:layout_below="@id/top_section"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="8dp"
+  />
+
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/bottom_section"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_height="120dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LAST UPDATE"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/gps_last_update_time"
+            android:layout_marginTop="8dp"
+            android:text="08:13 PM"
+            />
+
+        <Button
+            android:id="@+id/gps_update_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="30dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="30dp"
+            android:background="@drawable/green_btn_bg"
+            android:foreground="?selectableItemBackground"
+            android:text="UPDATE"
+            android:textColor="@color/colorWhite" />
+    </LinearLayout>
+</RelativeLayout>

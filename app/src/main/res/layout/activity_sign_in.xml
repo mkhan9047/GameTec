@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ActivityPackages.SignInActivity">
+
+    <ImageView
+        android:id="@+id/main"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="150dp"
+        android:src="@drawable/logo" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_below="@id/main"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_height="match_parent">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginStart="22dp"
+            android:layout_marginEnd="22dp"
+            android:id="@+id/user_name"
+            android:background="@drawable/border_balck"
+            android:hint="Username"
+            android:singleLine="true"
+            android:inputType="textPersonName"
+            android:padding="8dp"
+            android:textSize="15sp"
+
+            />
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginStart="22dp"
+            android:layout_marginEnd="22dp"
+            android:background="@drawable/border_balck"
+            android:id="@+id/password"
+            android:hint="Password"
+            android:singleLine="true"
+            android:inputType="textPassword"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            android:textSize="15sp"
+            />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="22dp"
+            android:layout_marginEnd="22dp"
+            android:background="@drawable/red_btn_bg"
+            android:text="Sign in"
+            android:onClick="onSignIn"
+            android:textColor="@color/colorWhite"
+            />
+
+    </LinearLayout>
+
+
+</RelativeLayout>
