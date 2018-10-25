@@ -1,6 +1,7 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,9 +15,11 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
+import app.gametec.com.gametec.ActivityPackages.SignInActivity;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Alarm;
@@ -61,12 +64,21 @@ public class BluetoothFragment extends Fragment {
 
         onInit();
 
-        BluetoothCall();
+        if (Utility.isInternetAvailable(getContext())) {
+            BluetoothCall();
+        } else {
+            Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+        }
+
 
         update.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PostBluetoothUpdate();
+                if (Utility.isInternetAvailable(getContext())) {
+                    PostBluetoothUpdate();
+                } else {
+                    Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -140,13 +152,25 @@ public class BluetoothFragment extends Fragment {
 
     private void BluetoothCall() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<Bluetooth> alarmCall = networkInterface.getBluetooth(storage.getAccessType() + " " + storage.getAccessToken());
         alarmCall.enqueue(new Callback<Bluetooth>() {
             @Override
             public void onResponse(Call<Bluetooth> call, Response<Bluetooth> response) {
+
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
 
                 Bluetooth bluetooth = response.body();
 
@@ -168,15 +192,17 @@ public class BluetoothFragment extends Fragment {
 
             @Override
             public void onFailure(Call<Bluetooth> call, Throwable t) {
-
-                Utility.DismissDialog(flower, getContext());
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
     private void PostBluetoothUpdate() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
 
         int status;
 
@@ -196,6 +222,18 @@ public class BluetoothFragment extends Fragment {
             @Override
             public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
 
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
                 UpdateFeatures features = response.body();
 
                 if (features != null) {
@@ -208,7 +246,10 @@ public class BluetoothFragment extends Fragment {
 
             @Override
             public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-                Utility.DismissDialog(flower, getContext());
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

@@ -10,7 +10,7 @@ public class Storage {
     private static final String REFRESH_TOKEN = null;
     private static final String ACCESS_TYPE = "Bearer";
     private static final String ROLE = null;
-
+    private static final  int CURRENT_MACHINE = 0;
 
     private Context context;
 
@@ -86,10 +86,24 @@ public class Storage {
     }
 
     public void SaveExit(boolean exit){
+
         getPreferencesEditor().putBoolean("exit", exit);
     }
 
     public boolean getExit(){
+
         return  getsharedPreferences().getBoolean("exit", false);
+    }
+
+    public void saveCurrentMachine(int id){
+
+        getPreferencesEditor().putInt("machine", id).commit();
+
+    }
+
+    public int getCurrentMachine(){
+
+        return getsharedPreferences().getInt("machine", CURRENT_MACHINE);
+
     }
 }

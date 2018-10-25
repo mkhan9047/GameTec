@@ -1,6 +1,7 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,9 +14,11 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
+import app.gametec.com.gametec.ActivityPackages.SignInActivity;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Alarm;
@@ -76,12 +79,22 @@ public class ClockFragment extends Fragment {
             }
         });
 
-        ClockCall();
+        if (Utility.isInternetAvailable(getContext())) {
+            ClockCall();
+        } else {
+            Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+        }
+
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PostClockUpdate();
+                if (Utility.isInternetAvailable(getContext())) {
+                    PostClockUpdate();
+                } else {
+                    Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 
@@ -90,13 +103,25 @@ public class ClockFragment extends Fragment {
 
     private void ClockCall() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<Clock> alarmCall = networkInterface.getClock(storage.getAccessType() + " " + storage.getAccessToken());
         alarmCall.enqueue(new Callback<Clock>() {
             @Override
             public void onResponse(Call<Clock> call, Response<Clock> response) {
+
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
 
                 Clock clock = response.body();
 
@@ -112,20 +137,34 @@ public class ClockFragment extends Fragment {
 
             @Override
             public void onFailure(Call<Clock> call, Throwable t) {
-                Utility.DismissDialog(flower, getContext());
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
 
     private void PostClockUpdate() {
-
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<UpdateFeatures> updateFeaturesCall = networkInterface.PostClockUpdate(storage.getAccessType() + " " + storage.getAccessToken());
         updateFeaturesCall.enqueue(new Callback<UpdateFeatures>() {
             @Override
             public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
 
                 UpdateFeatures features = response.body();
 
@@ -133,11 +172,16 @@ public class ClockFragment extends Fragment {
 
                     Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
                 }
+
+                Utility.DismissDialog(flower, getActivity());
             }
 
             @Override
             public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

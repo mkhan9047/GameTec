@@ -2,6 +2,7 @@ package app.gametec.com.gametec.FragmentsPackages;
 
 
 import android.arch.lifecycle.ViewModelProvider;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
@@ -18,10 +19,12 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.net.SocketTimeoutException;
 import java.sql.SQLTransactionRollbackException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
+import app.gametec.com.gametec.ActivityPackages.SignInActivity;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Alarm;
@@ -79,12 +82,24 @@ public class AlarmFragment extends Fragment {
             }
         });
 
-        AlarmCall();
+        if (Utility.isInternetAvailable(getActivity())) {
+            AlarmCall();
+        } else {
+            Toast.makeText(getActivity(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+        }
+
 
         updateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PostAlarmUpdate();
+
+
+                if (Utility.isInternetAvailable(getActivity())) {
+                    PostAlarmUpdate();
+                } else {
+                    Toast.makeText(getActivity(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
 
@@ -147,13 +162,27 @@ public class AlarmFragment extends Fragment {
 
 
     private void AlarmCall() {
-        final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<Alarm> alarmCall = networkInterface.getAlarm(storage.getAccessType() + " " + storage.getAccessToken());
         alarmCall.enqueue(new Callback<Alarm>() {
             @Override
             public void onResponse(Call<Alarm> call, Response<Alarm> response) {
+
+                /*token expiration handling*/
+
+                switch (response.code()){
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
+
                 Alarm alarm = response.body();
                 if (alarm != null) {
 
@@ -179,13 +208,18 @@ public class AlarmFragment extends Fragment {
             @Override
             public void onFailure(Call<Alarm> call, Throwable t) {
 
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
     }
 
     private void PostAlarmUpdate() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         int status;
 
         if (AlarmON) {
@@ -204,6 +238,19 @@ public class AlarmFragment extends Fragment {
             @Override
             public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
 
+
+                /*token expiration handling*/
+
+                switch (response.code()){
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
                 UpdateFeatures features = response.body();
 
                 if (features != null) {
@@ -216,7 +263,10 @@ public class AlarmFragment extends Fragment {
 
             @Override
             public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

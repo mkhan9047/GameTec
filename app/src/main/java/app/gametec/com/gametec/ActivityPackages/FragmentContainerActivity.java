@@ -23,6 +23,7 @@ import app.gametec.com.gametec.FragmentsPackages.ClientFragment;
 import app.gametec.com.gametec.FragmentsPackages.ClockFragment;
 import app.gametec.com.gametec.FragmentsPackages.DoorFragment;
 import app.gametec.com.gametec.FragmentsPackages.GpsFragment;
+import app.gametec.com.gametec.FragmentsPackages.MachineFragment;
 import app.gametec.com.gametec.FragmentsPackages.PercentFragement;
 import app.gametec.com.gametec.FragmentsPackages.ResetFragment;
 import app.gametec.com.gametec.FragmentsPackages.TicketFragment;
@@ -35,6 +36,7 @@ public class FragmentContainerActivity extends AppCompatActivity {
     int count = 0;
     String flag;
     Storage storage = new Storage(this);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,12 +44,11 @@ public class FragmentContainerActivity extends AppCompatActivity {
 
 
         /*default*/
-        currentFragment = new AdminFragment();
+        currentFragment = new MachineFragment();
         FragmentTransition();
 
 
-
-         flag = getIntent().getStringExtra("flag");
+        flag = getIntent().getStringExtra("flag");
 
         if (flag != null) {
             Log.d("MKFalg", flag);
@@ -74,7 +75,6 @@ public class FragmentContainerActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     public void onBackPressed() {
 
@@ -85,9 +85,9 @@ public class FragmentContainerActivity extends AppCompatActivity {
         } else {
 
             final android.support.v7.app.AlertDialog.Builder dailog = new android.support.v7.app.AlertDialog.Builder(this);
-            dailog.setMessage("Do you want to exit?");
+            dailog.setMessage(R.string.wanna_exit);
             dailog.setIcon(R.mipmap.ic_launcher_round);
-            dailog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            dailog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
 
@@ -97,7 +97,7 @@ public class FragmentContainerActivity extends AppCompatActivity {
                 }
             });
 
-            dailog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            dailog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     dialogInterface.dismiss();
@@ -106,10 +106,6 @@ public class FragmentContainerActivity extends AppCompatActivity {
             dailog.show();
 
         }
-
-
-
-
 
 
     }
@@ -121,6 +117,18 @@ public class FragmentContainerActivity extends AppCompatActivity {
             case "balance":
                 flag = null;
                 currentFragment = new BalanceFragment();
+                FragmentTransition();
+                break;
+
+            case "admin":
+                flag = null;
+                currentFragment = new AdminFragment();
+                FragmentTransition();
+                break;
+
+            case "machine":
+                flag = null;
+                currentFragment = new MachineFragment();
                 FragmentTransition();
                 break;
 
@@ -155,7 +163,7 @@ public class FragmentContainerActivity extends AppCompatActivity {
                 break;
 
             case "block_machine":
-                flag = null;
+
                 currentFragment = new BlockFragment();
                 FragmentTransition();
                 break;
@@ -185,6 +193,11 @@ public class FragmentContainerActivity extends AppCompatActivity {
                 intent1.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 finish();
                 startActivity(intent1);
+                break;
+
+            default:
+                currentFragment = new AdminFragment();
+                FragmentTransition();
                 break;
         }
 

@@ -36,7 +36,7 @@
         android:layout_marginTop="140dp"
         android:textSize="17sp"
         android:textColor="#000000"
-        android:text="CLOCK" />
+        android:text="@string/clock" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -51,7 +51,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="35dp"
-        android:text="20:55:59"
+        android:text="00:00:00"
         android:gravity="center"
         android:id="@+id/clock_time"
         android:layout_marginStart="25dp"
@@ -68,7 +68,7 @@
         android:background="@drawable/green_btn_bg"
         android:layout_marginStart="22dp"
         android:layout_marginEnd="22dp"
-        android:text="UPDATE"
+        android:text="@string/update"
         android:foreground="?selectableItemBackground"
         android:layout_marginBottom="16dp"
         android:id="@+id/clock_update_btn"
@@ -84,12 +84,12 @@
         android:layout_marginBottom="16dp"
         android:layout_centerHorizontal="true"
         android:id="@+id/clock_last_update_time"
-        android:text="17:35 PM" />
+        android:text="00:00 00" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="LAST UPDATE"
+        android:text="@string/last_update"
         android:id="@+id/last_update"
         android:layout_above="@id/clock_last_update_time"
         android:layout_centerHorizontal="true"

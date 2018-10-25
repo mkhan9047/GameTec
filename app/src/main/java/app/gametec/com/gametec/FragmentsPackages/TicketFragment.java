@@ -1,9 +1,11 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,9 +15,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
+import app.gametec.com.gametec.ActivityPackages.SignInActivity;
+import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Alarm;
 import app.gametec.com.gametec.ModelPackages.Ticket;
@@ -23,6 +28,7 @@ import app.gametec.com.gametec.ModelPackages.UpdateFeatures;
 import app.gametec.com.gametec.Networking.NetworkInterface;
 import app.gametec.com.gametec.Networking.RetrofitClient;
 import app.gametec.com.gametec.R;
+import cc.cloudist.acplibrary.ACProgressFlower;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -76,17 +82,30 @@ public class TicketFragment extends Fragment {
             }
         });
 
-        TicketCall();
+        if (Utility.isInternetAvailable(getContext())) {
+            TicketCall();
+        } else {
+            Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+        }
+
 
         updateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               PostTicketUpdate();
+                if (Utility.isInternetAvailable(getContext())) {
+                    PostTicketUpdate();
+                } else {
+                    Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
     }
 
     private void TicketCall() {
+
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
+
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<Ticket> alarmCall = networkInterface.getTicket(storage.getAccessType() + " " + storage.getAccessToken());
@@ -94,24 +113,41 @@ public class TicketFragment extends Fragment {
             @Override
             public void onResponse(Call<Ticket> call, Response<Ticket> response) {
 
-               Ticket ticket = response.body();
+                /*token expiration handling*/
 
-               if(ticket != null){
-                   ticket_total.setText(String.valueOf(ticket.getData().getTickets().getMonthTotal()));
-                   last_updatetime.setText(ticket.getData().getTickets().getLastUpdate());
-               }
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
+                Ticket ticket = response.body();
+
+                if (ticket != null) {
+                    ticket_total.setText(String.valueOf(ticket.getData().getTickets().getMonthTotal()));
+                    last_updatetime.setText(ticket.getData().getTickets().getLastUpdate());
+                }
+
+                Utility.DismissDialog(flower, getContext());
             }
 
             @Override
             public void onFailure(Call<Ticket> call, Throwable t) {
-
-
-
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
-    private void PostTicketUpdate(){
+    private void PostTicketUpdate() {
+
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
 
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
@@ -119,18 +155,33 @@ public class TicketFragment extends Fragment {
         updateFeaturesCall.enqueue(new Callback<UpdateFeatures>() {
             @Override
             public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
+                /*token expiration handling*/
 
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
                 UpdateFeatures features = response.body();
 
-                if(features != null){
+                if (features != null) {
 
                     Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
                 }
+
+                Utility.DismissDialog(flower, getActivity());
             }
 
             @Override
             public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

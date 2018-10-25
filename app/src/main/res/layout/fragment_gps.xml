@@ -17,8 +17,9 @@
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_gravity="center_vertical"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="8dp"
             android:background="#00000000"
+            android:id="@+id/back_button"
             android:foreground="?selectableItemBackground"
             android:padding="12dp"
             android:scaleType="fitCenter"
@@ -29,7 +30,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="GPS"
+            android:text="@string/gps"
             android:textSize="17sp"
             android:textStyle="bold" />
 
@@ -37,7 +38,7 @@
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_gravity="center_vertical"
-        android:layout_marginEnd="16dp"
+        android:layout_marginEnd="8dp"
             android:background="#00000000"
             android:padding="12dp"
             android:scaleType="fitCenter"
@@ -73,14 +74,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="LAST UPDATE"
+            android:text="@string/last_update"
             />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/gps_last_update_time"
             android:layout_marginTop="8dp"
-            android:text="08:13 PM"
+            android:text="00:00 PM"
             />
 
         <Button
@@ -93,7 +94,7 @@
             android:layout_marginStart="30dp"
             android:background="@drawable/green_btn_bg"
             android:foreground="?selectableItemBackground"
-            android:text="UPDATE"
+            android:text="@string/last_update"
             android:textColor="@color/colorWhite" />
     </LinearLayout>
 </RelativeLayout>

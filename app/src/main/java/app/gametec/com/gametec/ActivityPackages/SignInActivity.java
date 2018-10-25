@@ -46,7 +46,12 @@ public class SignInActivity extends AppCompatActivity {
 
         if (IsOk(email, password)) {
 
-            SignInCall(email.getText().toString(), password.getText().toString());
+            if (Utility.isInternetAvailable(this)) {
+                SignInCall(email.getText().toString(), password.getText().toString());
+            } else {
+                Toast.makeText(this, R.string.no_internet, Toast.LENGTH_SHORT).show();
+            }
+
 
         }
     }
@@ -61,7 +66,7 @@ public class SignInActivity extends AppCompatActivity {
 
             } else {
 
-                Toast.makeText(this, "Email is not Valid", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.email_no_valid, Toast.LENGTH_SHORT).show();
 
                 return false;
 
@@ -69,7 +74,7 @@ public class SignInActivity extends AppCompatActivity {
 
         } else {
 
-            Toast.makeText(this, "Input all field first!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.input_field, Toast.LENGTH_SHORT).show();
 
             return false;
 
@@ -80,7 +85,7 @@ public class SignInActivity extends AppCompatActivity {
 
     private void SignInCall(String email, String password) {
 
-        final ACProgressFlower dialog = Utility.StartProgressDialog(this, "Logging in....");
+        final ACProgressFlower dialog = Utility.StartProgressDialog(this, getString(R.string.logging_in));
 
         final Storage storage = new Storage(this);
 
@@ -97,42 +102,51 @@ public class SignInActivity extends AppCompatActivity {
 
                 /*       String json  = new Gson().toJson(response.body());*/
 
-                Log.d("MKJSON", response.body());
+             //;   Log.d("MKJSON", response.body());
 
-                try {
-                    JSONObject jsonObject = new JSONObject(response.body());
+                if(response.body() != null){
 
-                    boolean isSuccess = jsonObject.getBoolean("success");
 
-                    String message = jsonObject.getString("message");
+                    try {
 
-                    if (isSuccess) {
+                        JSONObject jsonObject = new JSONObject(response.body());
 
-                        Gson gson = new Gson();
+                        boolean isSuccess = jsonObject.getBoolean("success");
 
-                        SignIn signIn = gson.fromJson(response.body(), SignIn.class);
+                        String message = jsonObject.getString("message");
 
-                        /*save credentials*/
-                        storage.SaveAccessType(signIn.getData().getCredentials().getTokenType());
-                        storage.SaveAccessToken(signIn.getData().getCredentials().getAccessToken());
-                        storage.SaveLogInSate(true);
-                        storage.SaveRefreshToken(signIn.getData().getCredentials().getRefreshToken());
-                        storage.SaveRole(signIn.getData().getUser().getRole());
+                        if (isSuccess) {
 
-                        GOtoDash();
+                            Gson gson = new Gson();
 
-                        Utility.DismissDialog(dialog, SignInActivity.this);
+                            SignIn signIn = gson.fromJson(response.body(), SignIn.class);
 
-                    } else {
+                            /*save credentials*/
+                            storage.SaveAccessType(signIn.getData().getCredentials().getTokenType());
+                            storage.SaveAccessToken(signIn.getData().getCredentials().getAccessToken());
+                            storage.SaveLogInSate(true);
+                            storage.SaveRefreshToken(signIn.getData().getCredentials().getRefreshToken());
+                            storage.SaveRole(signIn.getData().getUser().getRole());
 
-                        Toast.makeText(SignInActivity.this, message, Toast.LENGTH_SHORT).show();
-                        Utility.DismissDialog(dialog, SignInActivity.this);
+                            GOtoDash();
+
+                            Utility.DismissDialog(dialog, SignInActivity.this);
+
+                        } else {
+
+                            Toast.makeText(SignInActivity.this, message, Toast.LENGTH_SHORT).show();
+                            Utility.DismissDialog(dialog, SignInActivity.this);
+                        }
+
+                    } catch (JSONException e) {
+
+                        e.printStackTrace();
                     }
-
-                } catch (JSONException e) {
-
-                    e.printStackTrace();
+                }else {
+                    Toast.makeText(SignInActivity.this, "No Response found", Toast.LENGTH_SHORT).show();
                 }
+
+
 
 /*
                 if (signIn != null) {
@@ -157,6 +171,8 @@ public class SignInActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<String> call, Throwable t) {
 
+                Log.d("Mim", t.getMessage());
+
             }
         });
 
@@ -169,7 +185,7 @@ public class SignInActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         finish();
         startActivity(intent);
-        overridePendingTransition( R.anim.left_to_right, R.anim.right_to_left );
+        overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
 
     }
 
@@ -182,12 +198,10 @@ public class SignInActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-         super.onBackPressed();
+        super.onBackPressed();
 
-        overridePendingTransition( 0, R.anim.right_to_left );
 
     }
-
 
 
 }

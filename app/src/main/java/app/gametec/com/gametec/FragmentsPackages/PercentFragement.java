@@ -1,10 +1,12 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
+import android.content.Intent;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,15 +18,19 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
+import app.gametec.com.gametec.ActivityPackages.SignInActivity;
+import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.PercentControl;
 import app.gametec.com.gametec.ModelPackages.UpdateFeatures;
 import app.gametec.com.gametec.Networking.NetworkInterface;
 import app.gametec.com.gametec.Networking.RetrofitClient;
 import app.gametec.com.gametec.R;
+import cc.cloudist.acplibrary.ACProgressFlower;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -78,41 +84,74 @@ public class PercentFragement extends Fragment {
             }
         });
 
-        getPercent();
+        if (Utility.isInternetAvailable(getContext())) {
+            getPercent();
+        } else {
+            Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+        }
+
 
         update_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PostPercentControl();
+                if (Utility.isInternetAvailable(getContext())) {
+                    PostPercentControl();
+                } else {
+                    Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
     }
 
 
     private void getPercent() {
+
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getContext());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<PercentControl> percentControlCall = networkInterface.getPercent(storage.getAccessType() + " " + storage.getAccessToken());
         percentControlCall.enqueue(new Callback<PercentControl>() {
             @Override
             public void onResponse(Call<PercentControl> call, Response<PercentControl> response) {
+
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
                 PercentControl control = response.body();
                 if (control != null) {
                     client.setText(control.getData().getPercentControl().getUser());
                     machine.setText(control.getData().getPercentControl().getMachine());
                     last_update_time.setText(control.getData().getPercentControl().getLastUpdate());
                 }
+
+                Utility.DismissDialog(flower, getContext());
             }
 
             @Override
             public void onFailure(Call<PercentControl> call, Throwable t) {
 
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
 
     private void PostPercentControl() {
+
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
 
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
@@ -121,17 +160,34 @@ public class PercentFragement extends Fragment {
             @Override
             public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
 
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
                 UpdateFeatures features = response.body();
 
                 if (features != null) {
 
                     Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
                 }
+
+                Utility.DismissDialog(flower, getActivity());
             }
 
             @Override
             public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="35dp"
         android:foreground="?selectableItemBackground"
-        android:background="@drawable/btn_border"
+        android:background="@drawable/border_balck"
         android:id="@+id/feature_btn"
         android:text="Balance" />
 

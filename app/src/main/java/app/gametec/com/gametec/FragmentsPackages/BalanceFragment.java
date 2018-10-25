@@ -1,6 +1,7 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,9 +16,11 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
+import app.gametec.com.gametec.ActivityPackages.SignInActivity;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Alarm;
@@ -68,13 +71,32 @@ public class BalanceFragment extends Fragment {
             }
         });
 
-        BalanceCall();
+        if(Utility.isInternetAvailable(getContext())){
+
+            BalanceCall();
+
+        }else{
+
+            Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+
+        }
+
 
         balance_update_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                if(Utility.isInternetAvailable(getContext())){
+
                 PostBalanceUpdate();
+
+                }else{
+
+                    Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+
+                }
+
+
             }
         });
 
@@ -98,13 +120,26 @@ public class BalanceFragment extends Fragment {
 
     private void BalanceCall() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<Balance> alarmCall = networkInterface.getBalance(storage.getAccessType() + " " + storage.getAccessToken());
         alarmCall.enqueue(new Callback<Balance>() {
             @Override
             public void onResponse(Call<Balance> call, Response<Balance> response) {
+                /*token expiration handling*/
+
+                switch (response.code()){
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
+
                 Balance balance = response.body();
 
                 if (balance != null) {
@@ -119,7 +154,10 @@ public class BalanceFragment extends Fragment {
 
             @Override
             public void onFailure(Call<Balance> call, Throwable t) {
-                Utility.DismissDialog(flower, getContext());
+                Utility.DismissDialog(flower, getActivity());
+                if(t instanceof SocketTimeoutException){
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -127,7 +165,7 @@ public class BalanceFragment extends Fragment {
 
     private void PostBalanceUpdate() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<UpdateFeatures> updateFeaturesCall = networkInterface.PostBalanceUpdate(storage.getAccessType() + " " + storage.getAccessToken());
@@ -135,6 +173,17 @@ public class BalanceFragment extends Fragment {
             @Override
             public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
 
+                /*token expiration handling*/
+
+                switch (response.code()){
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
                 UpdateFeatures features = response.body();
 
                 if (features != null) {
@@ -149,6 +198,9 @@ public class BalanceFragment extends Fragment {
             public void onFailure(Call<UpdateFeatures> call, Throwable t) {
 
                 Utility.DismissDialog(flower, getActivity());
+                if(t instanceof SocketTimeoutException){
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

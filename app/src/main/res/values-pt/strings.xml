@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="email">O email</string>
+    <string name="password">senha</string>
+    <string name="sign_in">ASSINAR EM</string>
+    <string name="alarm">ALARME</string>
+    <string name="on">EM</string>
+    <string name="off">FORA</string>
+    <string name="last_update">ÚLTIMA ATUALIZAÇÃO</string>
+    <string name="update">ATUALIZAR</string>
+    <string name="balance">EQUILIBRAR</string>
+    <string name="in">DENTRO</string>
+    <string name="out">FORA</string>
+    <string name="total">TOTAL</string>
+    <string name="block">QUADRA</string>
+    <string name="bluetooth">BLUETOOTH</string>
+    <string name="clock">RELÓGIO</string>
+    <string name="door">PORTA</string>
+    <string name="close">PERTO</string>
+    <string name="open">ABERTO</string>
+    <string name="gps">GPS</string>
+    <string name="percent_control">CONTROLE DE POR CENTO</string>
+    <string name="machine">MÁQUINA</string>
+    <string name="client">CLIENTE</string>
+    <string name="reset">RESTABELECER</string>
+    <string name="reset_machine">MÁQUINA DE RESTAURAÇÃO</string>
+    <string name="last_reset">ÚLTIMA RESTAURAÇÃO</string>
+    <string name="ticket">BILHETE</string>
+    <string name="month_total">MÊS TOTAL</string>
+    <string name="session_expired">Sessão expirada, faça o login novamente!</string>
+    <string name="connection_timeout">Tempo limite de conexão! Tente novamente</string>
+    <string name="loading">Carregando…</string>
+    <string name="no_internet">Sem internet!</string>
+    <string name="email_no_valid">E-mail não é válido</string>
+    <string name="input_field">Insira todo o campo primeiro!</string>
+    <string name="logging_in">Fazendo login …</string>
+    <string name="wanna_exit">Você quer sair?</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+
+</resources>

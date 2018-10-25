@@ -1,14 +1,17 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.ThemedSpinnerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +22,10 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.net.SocketTimeoutException;
+import java.util.Objects;
+
+import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Location;
@@ -42,6 +49,7 @@ public class GpsFragment extends Fragment implements OnMapReadyCallback {
     LatLng latLng;
     TextView last_update_time;
     Button updateBtn;
+    ImageButton back_button;
 
 
     public GpsFragment() {
@@ -72,6 +80,7 @@ public class GpsFragment extends Fragment implements OnMapReadyCallback {
 
             last_update_time = view.findViewById(R.id.gps_last_update_time);
             updateBtn = view.findViewById(R.id.gps_update_btn);
+            back_button = view.findViewById(R.id.back_button);
 
         }
 
@@ -79,8 +88,23 @@ public class GpsFragment extends Fragment implements OnMapReadyCallback {
             @Override
             public void onClick(View view) {
 
-                PostGpsUpdate();
+                if(Utility.isInternetAvailable(getContext())){
+                    PostGpsUpdate();
+                }else{
+                    Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+                }
 
+
+            }
+        });
+
+        back_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+
+                    ((FragmentContainerActivity) Objects.requireNonNull(getActivity())).FragmentTransition(new AdminFragment());
+                }
             }
         });
 
@@ -90,14 +114,18 @@ public class GpsFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
 
-        getLocation();
+        if (Utility.isInternetAvailable(getContext())) {
+            getLocation();
+        } else {
+            Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+        }
 
 
     }
 
 
     private void getLocation() {
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower   flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getContext());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<Location> locationCall = networkInterface.getLocation(storage.getAccessType() + " " + storage.getAccessToken());
@@ -130,16 +158,18 @@ public class GpsFragment extends Fragment implements OnMapReadyCallback {
 
             @Override
             public void onFailure(Call<Location> call, Throwable t) {
-                Utility.DismissDialog(flower, getContext());
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
 
 
+    private void PostGpsUpdate() {
 
-    private void PostGpsUpdate(){
-
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<UpdateFeatures> updateFeaturesCall = networkInterface.PostGpsUpdate(storage.getAccessType() + " " + storage.getAccessToken());
@@ -149,7 +179,7 @@ public class GpsFragment extends Fragment implements OnMapReadyCallback {
 
                 UpdateFeatures features = response.body();
 
-                if(features != null){
+                if (features != null) {
 
                     Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -159,8 +189,10 @@ public class GpsFragment extends Fragment implements OnMapReadyCallback {
 
             @Override
             public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-
                 Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
 
             }
         });

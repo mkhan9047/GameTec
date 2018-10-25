@@ -1,6 +1,7 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,9 +15,11 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
+import app.gametec.com.gametec.ActivityPackages.SignInActivity;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Alarm;
@@ -74,13 +77,24 @@ public class DoorFragment extends Fragment {
         });
 
 
-        DoorCall();
+        if (Utility.isInternetAvailable(getContext())) {
+            DoorCall();
+        } else {
+            Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+        }
+
 
         /*update button click*/
         UpdateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PostDoorUpdate();
+
+                if (Utility.isInternetAvailable(getContext())) {
+                    PostDoorUpdate();
+                } else {
+                    Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
     }
@@ -144,13 +158,26 @@ public class DoorFragment extends Fragment {
 
 
     private void DoorCall() {
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<Door> alarmCall = networkInterface.getDoor(storage.getAccessType() + " " + storage.getAccessToken());
         alarmCall.enqueue(new Callback<Door>() {
             @Override
             public void onResponse(Call<Door> call, Response<Door> response) {
+
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
                 Door door = response.body();
                 if (door != null) {
                     if (door.getData().getDoorOpening().getStatus() == 1) {
@@ -174,7 +201,10 @@ public class DoorFragment extends Fragment {
 
             @Override
             public void onFailure(Call<Door> call, Throwable t) {
-                Utility.DismissDialog(flower, getContext());
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -182,7 +212,7 @@ public class DoorFragment extends Fragment {
 
     private void PostDoorUpdate() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
 
         int status;
 
@@ -202,6 +232,19 @@ public class DoorFragment extends Fragment {
             @Override
             public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
 
+
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
                 UpdateFeatures features = response.body();
 
                 if (features != null) {
@@ -216,6 +259,9 @@ public class DoorFragment extends Fragment {
             public void onFailure(Call<UpdateFeatures> call, Throwable t) {
 
                 Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

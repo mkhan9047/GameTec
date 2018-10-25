@@ -10,9 +10,9 @@ import app.gametec.com.gametec.ModelPackages.Clock;
 import app.gametec.com.gametec.ModelPackages.Door;
 import app.gametec.com.gametec.ModelPackages.Features;
 import app.gametec.com.gametec.ModelPackages.Location;
+import app.gametec.com.gametec.ModelPackages.Machine;
 import app.gametec.com.gametec.ModelPackages.MachineReset;
 import app.gametec.com.gametec.ModelPackages.PercentControl;
-import app.gametec.com.gametec.ModelPackages.SignIn;
 import app.gametec.com.gametec.ModelPackages.Ticket;
 import app.gametec.com.gametec.ModelPackages.UpdateFeatures;
 import retrofit2.Call;
@@ -22,12 +22,13 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface NetworkInterface {
 
     @FormUrlEncoded
     @POST("api/login")
-    Call<String> getSignedIN(@Field("email") String email, @Field("password")String password);
+    Call<String> getSignedIN(@Field("email") String email, @Field("password") String password);
 
     @GET("api/user/features")
     Call<Features> getFeatures(@Header("Authorization") String token);
@@ -98,5 +99,8 @@ public interface NetworkInterface {
 
     @POST("api/reset-machine-update")
     Call<UpdateFeatures> PostResetUpdate(@Header("Authorization")String token);
+
+    @GET("api/user/machines")
+    Call<Machine> getMachineList(@Header("Authorization") String token);
 
 }

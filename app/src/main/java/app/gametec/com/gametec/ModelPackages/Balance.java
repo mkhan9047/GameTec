@@ -53,19 +53,7 @@ public class Balance{
 		return out;
 	}
 
-	@Override
- 	public String toString(){
-		return 
-			"Balance{" + 
-			"data = '" + data + '\'' + 
-			",success = '" + success + '\'' + 
-			",message = '" + message + '\'' + 
-			",total = '" + total + '\'' + 
-			",in = '" + in + '\'' + 
-			",last_update = '" + lastUpdate + '\'' + 
-			",out = '" + out + '\'' + 
-			"}";
-		}
+
 
 	public class Data{
 
@@ -76,12 +64,6 @@ public class Balance{
 			return balance;
 		}
 
-		@Override
-		public String toString(){
-			return
-					"Data{" +
-							"balance = '" + balance + '\'' +
-							"}";
-		}
+
 	}
 }

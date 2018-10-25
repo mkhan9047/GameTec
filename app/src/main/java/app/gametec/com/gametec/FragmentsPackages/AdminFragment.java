@@ -2,11 +2,13 @@ package app.gametec.com.gametec.FragmentsPackages;
 
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,9 +17,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
@@ -26,6 +30,7 @@ import app.gametec.com.gametec.AdapterPackages.FeatureListAdapter;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Features;
+import app.gametec.com.gametec.ModelPackages.SignIn;
 import app.gametec.com.gametec.Networking.NetworkInterface;
 import app.gametec.com.gametec.Networking.RetrofitClient;
 import app.gametec.com.gametec.R;
@@ -45,6 +50,7 @@ public class AdminFragment extends Fragment {
     FeatureListAdapter adapter;
     Fragment fragment;
     TextView role;
+    ImageButton machine_reload;
 
 
     public AdminFragment() {
@@ -64,6 +70,11 @@ public class AdminFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         View view = getView();
+
+
+        Storage storage = new Storage(getActivity());
+
+        Log.d("current_machine", String.valueOf(storage.getCurrentMachine()));
 
       /*  if (view != null) {
 
@@ -86,18 +97,38 @@ public class AdminFragment extends Fragment {
 
             role = view.findViewById(R.id.role);
             featureRecycler = view.findViewById(R.id.feature_recylerview);
+            machine_reload = view.findViewById(R.id.machine_reload);
 
         }
 
 
-        Storage storage = new Storage(getActivity());
+        machine_reload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Activity activity = getActivity();
+                if (activity != null) {
+                    ((FragmentContainerActivity) activity).FragmentTransition(new MachineFragment());
+                }
+
+            }
+        });
+
+
         role.setText(storage.getRole());
 
         featureRecycler.setHasFixedSize(true);
         featureRecycler.setLayoutManager(new LinearLayoutManager(getContext()));
 
 
-        FeaturesCall();
+        if (Utility.isInternetAvailable(getContext())) {
+
+            FeaturesCall();
+
+        } else {
+
+            Utility.ShowToast(getContext(), "No internet!");
+        }
+
         //  ButtonClickListener();
 
     }
@@ -216,9 +247,9 @@ public class AdminFragment extends Fragment {
 
     private void FeaturesCall() {
 
-        final ACProgressFlower dialog = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower dialog = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
 
-        Storage storage = new Storage(getContext());
+        final Storage storage = new Storage(getContext());
 
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
 
@@ -228,15 +259,29 @@ public class AdminFragment extends Fragment {
             @Override
             public void onResponse(Call<Features> call, Response<Features> response) {
 
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
                 Features features = response.body();
 
                 if (features != null) {
 
 
                     adapter = new FeatureListAdapter(features.getData().getFeatures(), getActivity());
+
                     Utility.DismissDialog(dialog, getActivity());
 
                     featureRecycler.setAdapter(adapter);
+
 
                 }
 
@@ -245,6 +290,9 @@ public class AdminFragment extends Fragment {
             @Override
             public void onFailure(Call<Features> call, Throwable t) {
                 Utility.DismissDialog(dialog, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

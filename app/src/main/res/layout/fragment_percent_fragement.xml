@@ -36,7 +36,7 @@
         android:layout_marginTop="140dp"
         android:textSize="17sp"
         android:textColor="#000000"
-        android:text="PERCENT CONTROL" />
+        android:text="@string/percent_control" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -52,7 +52,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="MECHINE"
+            android:text="@string/machine"
             android:textSize="15sp"
             />
 
@@ -62,7 +62,7 @@
             android:layout_marginStart="25dp"
             android:layout_marginEnd="25dp"
             android:layout_marginTop="8dp"
-            android:text="50%"
+            android:text="0%"
             android:textSize="15sp"
             android:id="@+id/machine_percent"
             android:gravity="center"
@@ -73,7 +73,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="CLIENT"
+            android:text="@string/client"
             android:layout_marginTop="8dp"
             android:textSize="15sp"
             />
@@ -84,7 +84,7 @@
             android:layout_marginStart="25dp"
             android:layout_marginEnd="25dp"
             android:layout_marginTop="8dp"
-            android:text="50%"
+            android:text="0%"
             android:id="@+id/client_percent"
             android:textSize="15sp"
             android:gravity="center"
@@ -102,7 +102,7 @@
         android:background="@drawable/green_btn_bg"
         android:layout_marginStart="22dp"
         android:layout_marginEnd="22dp"
-        android:text="UPDATE"
+        android:text="@string/update"
         android:foreground="?selectableItemBackground"
         android:layout_marginBottom="16dp"
         android:id="@+id/percent_update_btn"
@@ -118,12 +118,12 @@
         android:layout_marginBottom="16dp"
         android:layout_centerHorizontal="true"
         android:id="@+id/percent_last_update"
-        android:text="17:35 PM" />
+        android:text="00:00 00" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="LAST UPDATE"
+        android:text="@string/last_update"
         android:id="@+id/last_update"
         android:layout_above="@id/percent_last_update"
         android:layout_centerHorizontal="true"

@@ -1,6 +1,7 @@
 package app.gametec.com.gametec.ActivityPackages;
 
 import android.accessibilityservice.GestureDescription;
+import android.app.FragmentContainer;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -54,7 +55,9 @@ public class SplashActivity extends AppCompatActivity {
 
                 if (storage.getLogInState()) {
 
-                    startActivity(new Intent(SplashActivity.this, FragmentContainerActivity.class));
+                    Intent intent = new Intent(SplashActivity.this, FragmentContainerActivity.class);
+                    intent.putExtra("flag", "machine");
+                    startActivity(intent);
                     overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
 
                 } else {

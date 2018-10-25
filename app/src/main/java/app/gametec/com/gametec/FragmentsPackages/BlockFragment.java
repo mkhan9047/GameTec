@@ -1,6 +1,7 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,9 +15,11 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
+import app.gametec.com.gametec.ActivityPackages.SignInActivity;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Alarm;
@@ -73,12 +76,23 @@ public class BlockFragment extends Fragment {
             }
         });
 
-        BlockCall();
+
+        if (Utility.isInternetAvailable(getContext())) {
+            BlockCall();
+
+        } else {
+            Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+        }
 
         update_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                PostBlockUpdate();
+                if (Utility.isInternetAvailable(getContext())) {
+                    PostBlockUpdate();
+
+                } else {
+                    Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -91,7 +105,7 @@ public class BlockFragment extends Fragment {
             blockOff = view.findViewById(R.id.blockOffButton);
             blockOn = view.findViewById(R.id.blockOnButton);
             back_button = view.findViewById(R.id.back_button);
-            block_last_update_time= view.findViewById(R.id.block_last_update_time);
+            block_last_update_time = view.findViewById(R.id.block_last_update_time);
             update_btn = view.findViewById(R.id.block_update_btn);
         }
 
@@ -144,13 +158,26 @@ public class BlockFragment extends Fragment {
 
     private void BlockCall() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
         NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
         Call<Block> alarmCall = networkInterface.getBlock(storage.getAccessType() + " " + storage.getAccessToken());
         alarmCall.enqueue(new Callback<Block>() {
             @Override
             public void onResponse(Call<Block> call, Response<Block> response) {
+
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
                 Block block = response.body();
 
                 if (block != null) {
@@ -172,7 +199,10 @@ public class BlockFragment extends Fragment {
             @Override
             public void onFailure(Call<Block> call, Throwable t) {
 
-                Utility.DismissDialog(flower, getContext());
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
@@ -181,7 +211,7 @@ public class BlockFragment extends Fragment {
 
     private void PostBlockUpdate() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), "Loading...");
+        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
 
         int status;
 
@@ -203,6 +233,18 @@ public class BlockFragment extends Fragment {
             @Override
             public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
 
+                /*token expiration handling*/
+
+                switch (response.code()) {
+                    case 401:
+                        Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getActivity(), SignInActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                }
+
+                /*end of token expiration */
+
                 UpdateFeatures features = response.body();
 
                 if (features != null) {
@@ -215,7 +257,10 @@ public class BlockFragment extends Fragment {
 
             @Override
             public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-
+                Utility.DismissDialog(flower, getActivity());
+                if (t instanceof SocketTimeoutException) {
+                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
