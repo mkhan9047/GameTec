@@ -10,7 +10,10 @@ public class Storage {
     private static final String REFRESH_TOKEN = null;
     private static final String ACCESS_TYPE = "Bearer";
     private static final String ROLE = null;
-    private static final  int CURRENT_MACHINE = 0;
+    private static final int CURRENT_MACHINE = 0;
+    private static final String CURRENT_MACHINE_NAME = "";
+    private static final boolean HAS_PIN = false;
+    private static final String PIN_NUMBER = "";
 
     private Context context;
 
@@ -74,36 +77,69 @@ public class Storage {
         return getsharedPreferences().getString("refresh", REFRESH_TOKEN);
     }
 
-    public void SaveRole(String role){
+    public void SaveRole(String role) {
 
         getPreferencesEditor().putString("role", role).commit();
 
     }
 
-    public String getRole(){
+    public String getRole() {
 
         return getsharedPreferences().getString("role", ROLE);
     }
 
-    public void SaveExit(boolean exit){
+    public void SaveExit(boolean exit) {
 
         getPreferencesEditor().putBoolean("exit", exit);
     }
 
-    public boolean getExit(){
+    public boolean getExit() {
 
-        return  getsharedPreferences().getBoolean("exit", false);
+        return getsharedPreferences().getBoolean("exit", false);
     }
 
-    public void saveCurrentMachine(int id){
+    public void saveCurrentMachine(int id) {
 
         getPreferencesEditor().putInt("machine", id).commit();
 
     }
 
-    public int getCurrentMachine(){
+    public int getCurrentMachine() {
 
         return getsharedPreferences().getInt("machine", CURRENT_MACHINE);
 
+    }
+
+    public void saveCurrentMachineName(String name) {
+
+        getPreferencesEditor().putString("machine_name", name).commit();
+    }
+
+    public String getCurrentMachineName() {
+
+        return getsharedPreferences().getString("machine_name", CURRENT_MACHINE_NAME);
+    }
+
+    public void saveHasPin(boolean has) {
+
+        getPreferencesEditor().putBoolean("has_pin", has).commit();
+
+    }
+
+    public boolean getHasPin() {
+
+        return getsharedPreferences().getBoolean("has_pin", HAS_PIN);
+    }
+
+
+
+
+
+    public void savePin(String pin) {
+        getPreferencesEditor().putString("pin", pin).commit();
+    }
+
+    public String getPin() {
+        return getsharedPreferences().getString("pin", PIN_NUMBER);
     }
 }

@@ -11,8 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.SocketTimeoutException;
 import java.util.Objects;
@@ -40,9 +46,13 @@ public class ResetFragment extends Fragment {
 
     ImageButton back_button;
 
+    LinearLayout middleLayout, confirmLayout;
+
+    Fragment placeHolder;
+
     TextView resetTime, reset_last_update;
 
-    Button resetBtn, updateBtn;
+    Button resetBtn, updateBtn, resetYesBtn, resetNoBtn;
 
     public ResetFragment() {
         // Required empty public constructor
@@ -69,7 +79,16 @@ public class ResetFragment extends Fragment {
             resetTime = view.findViewById(R.id.reset_time);
             resetBtn = view.findViewById(R.id.Reset_onButton);
             updateBtn = view.findViewById(R.id.reset_update_btn);
+            middleLayout = view.findViewById(R.id.middle_layout);
+            confirmLayout = view.findViewById(R.id.confirm_layout);
+
+            resetYesBtn = view.findViewById(R.id.Reset_Yes_Button);
+            resetNoBtn = view.findViewById(R.id.Reset_No_Button);
         }
+
+        /*confirm layout invisiable as default and middle layout visible*/
+        middleLayout.setVisibility(View.VISIBLE);
+        confirmLayout.setVisibility(View.GONE);
 
         back_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,15 +99,35 @@ public class ResetFragment extends Fragment {
             }
         });
 
-
-        resetBtn.setOnClickListener(new View.OnClickListener() {
+        resetNoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                confirmLayout.setVisibility(View.GONE);
+                middleLayout.setVisibility(View.VISIBLE);
+            }
+        });
+
+        resetYesBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
                 if (Utility.isInternetAvailable(getContext())) {
                     PostResetUpdate();
                 } else {
                     Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+
+        resetBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                middleLayout.setVisibility(View.GONE);
+                confirmLayout.setVisibility(View.VISIBLE);
+
 
             }
         });
@@ -106,8 +145,8 @@ public class ResetFragment extends Fragment {
         });
 
 
-        if (Utility.isInternetAvailable(getContext())) {
-           onGetReset();
+     if (Utility.isInternetAvailable(getContext())) {
+            onGetReset();
         } else {
             Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
         }
@@ -119,11 +158,11 @@ public class ResetFragment extends Fragment {
 
         final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        final Call<MachineReset> MachineCall = networkInterface.getMachine(storage.getAccessType() + " " + storage.getAccessToken());
-        MachineCall.enqueue(new Callback<MachineReset>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+        final Call<String> MachineCall = networkInterface.getMachine(storage.getAccessType() + " " + storage.getAccessToken(), storage.getCurrentMachine());
+        MachineCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<MachineReset> call, Response<MachineReset> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
                 /*token expiration handling*/
 
@@ -136,19 +175,50 @@ public class ResetFragment extends Fragment {
                 }
 
                 /*end of token expiration */
+                if (response.body() != null) {
 
-                MachineReset reset = response.body();
-                if (reset != null) {
-                    resetTime.setText(reset.getData().getResetMachine().getTime());
-                    reset_last_update.setText(reset.getData().getResetMachine().getLastUpdate());
+                    JSONObject jsonObject = null;
+                    try {
+
+
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+
+                            Gson gson = new Gson();
+
+                            MachineReset reset = gson.fromJson(response.body(), MachineReset.class);
+
+                            if (reset != null) {
+                                resetTime.setText(reset.getData().getResetMachine().getTime());
+                                reset_last_update.setText(reset.getData().getResetMachine().getLastUpdate());
+                            }
+
+                            Utility.DismissDialog(flower);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
 
-                Utility.DismissDialog(flower, getContext());
+
+                Utility.DismissDialog(flower);
             }
 
             @Override
-            public void onFailure(Call<MachineReset> call, Throwable t) {
-                Utility.DismissDialog(flower, getActivity());
+            public void onFailure(Call<String> call, Throwable t) {
+                Utility.DismissDialog(flower);
                 if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
                 }
@@ -161,11 +231,11 @@ public class ResetFragment extends Fragment {
 
         final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        Call<UpdateFeatures> updateFeaturesCall = networkInterface.PostResetUpdate(storage.getAccessType() + " " + storage.getAccessToken());
-        updateFeaturesCall.enqueue(new Callback<UpdateFeatures>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+        Call<String> updateFeaturesCall = networkInterface.PostResetUpdate(storage.getAccessType() + " " + storage.getAccessToken(), storage.getCurrentMachine());
+        updateFeaturesCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
                 /*token expiration handling*/
 
                 switch (response.code()) {
@@ -178,22 +248,55 @@ public class ResetFragment extends Fragment {
 
                 /*end of token expiration */
 
-                UpdateFeatures features = response.body();
+                if (response.body() != null) {
 
-                if (features != null) {
+                    JSONObject jsonObject = null;
+                    try {
 
-                    Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
+
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+
+                            Gson gson = new Gson();
+                            UpdateFeatures machine = gson.fromJson(response.body(), UpdateFeatures.class);
+                            Toast.makeText(getActivity(), machine.getMessage(), Toast.LENGTH_SHORT).show();
+                            Utility.DismissDialog(flower);
+
+                            /*set reset section visible agian and make confirm section invisible*/
+                            confirmLayout.setVisibility(View.GONE);
+                            middleLayout.setVisibility(View.VISIBLE);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+
+                            /*set reset section visible agian and make confirm section invisible*/
+                            confirmLayout.setVisibility(View.GONE);
+                            middleLayout.setVisibility(View.VISIBLE);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
 
-                Utility.DismissDialog(flower, getActivity());
+                Utility.DismissDialog(flower);
             }
 
             @Override
-            public void onFailure(Call<UpdateFeatures> call, Throwable t) {
+            public void onFailure(Call<String> call, Throwable t) {
 
-                Utility.DismissDialog(flower, getActivity());
+                Utility.DismissDialog(flower);
                 if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+
                 }
             }
         });

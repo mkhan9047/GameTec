@@ -37,5 +37,12 @@
     <string name="wanna_exit">Você quer sair?</string>
     <string name="yes">Sim</string>
     <string name="no">Não</string>
+    <string name="set_your_pin">SET YOUR PIN</string>
+    <string name="set_digit_pin">SET-4 DIGIT PIN</string>
+    <string name="set">SET</string>
+    <string name="verify">Verify</string>
+    <string name="insert_your_pin">INSERT YOUR PIN</string>
+    <string name="touch_fingerprint">Touch the fingerprint sensor!</string>
+    <string name="cancel">Cancel</string>
 
 </resources>

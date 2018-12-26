@@ -31,76 +31,78 @@ public interface NetworkInterface {
     Call<String> getSignedIN(@Field("email") String email, @Field("password") String password);
 
     @GET("api/user/features")
-    Call<Features> getFeatures(@Header("Authorization") String token);
+    Call<String> getFeatures(@Header("Authorization") String token);
 
     @GET("api/alarm")
-    Call<Alarm> getAlarm(@Header("Authorization")String token);
+    Call<String> getAlarm(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @GET("api/balance")
-    Call<Balance> getBalance(@Header("Authorization")String token);
+    Call<String> getBalance(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @GET("api/tickets")
-    Call<Ticket> getTicket(@Header("Authorization")String token);
+    Call<String> getTicket(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @GET("api/clock")
-    Call<Clock> getClock(@Header("Authorization")String token);
+    Call<String> getClock(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @GET("api/door-opening")
-    Call<Door> getDoor(@Header("Authorization")String token);
+    Call<String> getDoor(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @GET("api/block-machine")
-    Call<Block> getBlock(@Header("Authorization")String token);
+    Call<String> getBlock(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @GET("api/bluetooth")
-    Call<Bluetooth> getBluetooth(@Header("Authorization")String token);
+    Call<String> getBluetooth(@Header("Authorization") String token, @Query("machine_id") int id);
 
 
     @GET("api/reset-machine")
-    Call<MachineReset> getMachine(@Header("Authorization")String token);
+    Call<String> getMachine(@Header("Authorization") String token, @Query("machine_id") int id);
 
 
     @GET("api/percent-control")
-    Call<PercentControl> getPercent(@Header("Authorization")String token);
+    Call<String> getPercent(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @GET("api/gps")
-    Call<Location> getLocation(@Header("Authorization")String token);
+    Call<String> getLocation(@Header("Authorization") String token, @Query("machine_id") int id);
+
 
 
     @POST("api/balance-update")
-    Call<UpdateFeatures> PostBalanceUpdate(@Header("Authorization")String token);
+    Call<String> PostBalanceUpdate(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @POST("api/tickets-update")
-    Call<UpdateFeatures> PostTicketUdpate(@Header("Authorization")String token);
+    Call<String> PostTicketUdpate(@Header("Authorization") String token, @Query("machine_id")int id);
 
     @FormUrlEncoded
     @POST("api/alarm-update")
-    Call<UpdateFeatures> PostAlarmUpdate(@Header("Authorization")String token, @Field("status") int status);
+    Call<String> PostAlarmUpdate(@Header("Authorization") String token, @Field("status") int status, @Field("machine_id") int machine_id);
 
     @FormUrlEncoded
     @POST("api/door-opening-update")
-    Call<UpdateFeatures> PostDoorUpdate(@Header("Authorization")String token, @Field("status") int status);
+    Call<String> PostDoorUpdate(@Header("Authorization") String token, @Field("status") int status, @Field("machine_id")int id);
 
     @POST("api/gps-update")
-    Call<UpdateFeatures> PostGpsUpdate(@Header("Authorization")String token);
+    Call<String> PostGpsUpdate(@Header("Authorization") String token, @Query("machine_id")int id);
 
     @POST("api/clock-update")
-    Call<UpdateFeatures> PostClockUpdate(@Header("Authorization")String token);
+    Call<String> PostClockUpdate(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @FormUrlEncoded
     @POST("api/block-machine-update")
-    Call<UpdateFeatures> PostBlockUpdate(@Header("Authorization")String token, @Field("status") int status);
+    Call<String> PostBlockUpdate(@Header("Authorization") String token, @Field("status") int status, @Field("machine_id") int id);
 
     @POST("api/percent-control-update")
-    Call<UpdateFeatures> PostPercentControl(@Header("Authorization")String token);
+    Call<String> PostPercentControl(@Header("Authorization") String token, @Query("machine_id")int id);
 
     @FormUrlEncoded
     @POST("api/bluetooth-update")
-    Call<UpdateFeatures> PostBluetoothUpdate(@Header("Authorization")String token, @Field("status") int status);
+    Call<String> PostBluetoothUpdate(@Header("Authorization") String token, @Field("status") int status,  @Field("machine_id") int id);
 
+    @FormUrlEncoded
     @POST("api/reset-machine-update")
-    Call<UpdateFeatures> PostResetUpdate(@Header("Authorization")String token);
+    Call<String> PostResetUpdate(@Header("Authorization") String token, @Field("machine_id") int id);
 
     @GET("api/user/machines")
-    Call<Machine> getMachineList(@Header("Authorization") String token);
+    Call<String> getMachineList(@Header("Authorization") String token);
 
 }

@@ -48,7 +48,8 @@ public class MachineListAdapter extends RecyclerView.Adapter<MachineListAdapter.
         holder.button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("id_is = ",  String.valueOf(machinesItems.get(holder.getAdapterPosition()).getId()));
+
+                storage.saveCurrentMachineName(machinesItems.get(holder.getAdapterPosition()).getName());
                 storage.saveCurrentMachine(machinesItems.get(holder.getAdapterPosition()).getId());
                 ((FragmentContainerActivity) context).FragmentTransition(new AdminFragment());
 

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FragmentsPackages.ConnectBluetoothFragment">
+
+
+
+
+    <ImageView
+        android:id="@+id/main_logo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="22dp"
+        android:src="@drawable/logo" />
+
+    <LinearLayout
+        android:id="@+id/middle_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/last_update"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_turn_on_bluetooth"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginEnd="22dp"
+            android:layout_marginStart="22dp"
+            android:background="@drawable/btn_border"
+            android:foreground="?selectableItemBackground"
+            android:text="Turn on Bluetooth" />
+
+        <Button
+            android:id="@+id/btn_pair_bluetooth"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginEnd="22dp"
+            android:layout_marginStart="22dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/btn_border"
+            android:foreground="?selectableItemBackground"
+            android:text="Pair Bluetooth" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Bluetooth Status"
+            />
+
+        <Switch
+            android:id="@+id/swt_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:layout_marginTop="8dp"
+            />
+
+
+    </LinearLayout>
+
+
+
+
+    <Button
+        android:id="@+id/btn_back"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginEnd="22dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="22dp"
+        android:layout_marginBottom="32dp"
+        android:layout_marginTop="16dp"
+      android:background="@drawable/border_balck"
+        android:foreground="?selectableItemBackground"
+        android:text="Back" />
+
+
+
+</RelativeLayout>

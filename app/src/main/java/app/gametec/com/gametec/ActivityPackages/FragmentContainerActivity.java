@@ -1,34 +1,34 @@
 package app.gametec.com.gametec.ActivityPackages;
 
-import android.accessibilityservice.GestureDescription;
-import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.LoginFilter;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.Toast;
 
 import app.gametec.com.gametec.FragmentsPackages.AdminFragment;
 import app.gametec.com.gametec.FragmentsPackages.AlarmFragment;
 import app.gametec.com.gametec.FragmentsPackages.BalanceFragment;
 import app.gametec.com.gametec.FragmentsPackages.BlockFragment;
-import app.gametec.com.gametec.FragmentsPackages.BloquearFragment;
 import app.gametec.com.gametec.FragmentsPackages.BluetoothFragment;
-import app.gametec.com.gametec.FragmentsPackages.ClientFragment;
 import app.gametec.com.gametec.FragmentsPackages.ClockFragment;
 import app.gametec.com.gametec.FragmentsPackages.DoorFragment;
 import app.gametec.com.gametec.FragmentsPackages.GpsFragment;
 import app.gametec.com.gametec.FragmentsPackages.MachineFragment;
 import app.gametec.com.gametec.FragmentsPackages.PercentFragement;
 import app.gametec.com.gametec.FragmentsPackages.ResetFragment;
+import app.gametec.com.gametec.FragmentsPackages.SetPinFragment;
 import app.gametec.com.gametec.FragmentsPackages.TicketFragment;
+import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.R;
+
+import static android.os.Build.VERSION.SDK;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.KITKAT;
 
 public class FragmentContainerActivity extends AppCompatActivity {
 
@@ -36,6 +36,7 @@ public class FragmentContainerActivity extends AppCompatActivity {
     int count = 0;
     String flag;
     Storage storage = new Storage(this);
+    private boolean wasInBackground = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,13 +45,14 @@ public class FragmentContainerActivity extends AppCompatActivity {
 
 
         /*default*/
-        currentFragment = new MachineFragment();
+     /*   currentFragment = new MachineFragment();
         FragmentTransition();
-
+*/
 
         flag = getIntent().getStringExtra("flag");
 
         if (flag != null) {
+
             Log.d("MKFalg", flag);
             MakeTransactionFromIntent(flag);
         }
@@ -91,9 +93,10 @@ public class FragmentContainerActivity extends AppCompatActivity {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
 
+                    finishAffinity();
                     moveTaskToBack(true);
-                    android.os.Process.killProcess(android.os.Process.myPid());
                     System.exit(1);
+                    android.os.Process.killProcess(android.os.Process.myPid());
                 }
             });
 
@@ -181,14 +184,16 @@ public class FragmentContainerActivity extends AppCompatActivity {
                 break;
 
             case "percent_control":
-                flag = null;
+               flag = null;
                 currentFragment = new PercentFragement();
                 FragmentTransition();
                 break;
-
             case "logout":
                 Storage storage = new Storage(this);
                 storage.SaveLogInSate(false);
+                storage.saveCurrentMachineName("");
+                storage.saveCurrentMachine(0);
+
                 Intent intent1 = new Intent(this, SignInActivity.class);
                 intent1.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 finish();
@@ -200,6 +205,51 @@ public class FragmentContainerActivity extends AppCompatActivity {
                 FragmentTransition();
                 break;
         }
+
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        wasInBackground = true;
+    }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+
+        if(wasInBackground){
+            wasInBackground =false;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                if(Utility.checkFingerprintSettings(FragmentContainerActivity.this)){
+
+                    Intent intent = new Intent(FragmentContainerActivity.this, AuthnicateActivity.class);
+                    intent.putExtra("FROMBG", true);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("has", "finger_print");
+                    startActivity(intent);
+                    finish();
+                    //overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
+
+                }
+                else{
+                    Intent intent = new Intent(FragmentContainerActivity.this, AuthnicateActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("FROMBG", true);
+                    startActivity(intent);
+                    finish();
+                    //overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
+
+                }
+            }
+
+        }
+
 
     }
 }

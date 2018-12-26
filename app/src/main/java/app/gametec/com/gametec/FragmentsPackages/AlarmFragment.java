@@ -1,9 +1,7 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
-import android.arch.lifecycle.ViewModelProvider;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,17 +15,21 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.SocketTimeoutException;
-import java.sql.SQLTransactionRollbackException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
 import app.gametec.com.gametec.ActivityPackages.SignInActivity;
+import app.gametec.com.gametec.AdapterPackages.FeatureListAdapter;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Alarm;
+import app.gametec.com.gametec.ModelPackages.Features;
 import app.gametec.com.gametec.ModelPackages.UpdateFeatures;
 import app.gametec.com.gametec.Networking.NetworkInterface;
 import app.gametec.com.gametec.Networking.RetrofitClient;
@@ -37,7 +39,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static android.graphics.Color.GRAY;
 import static android.graphics.Color.argb;
 
 /**
@@ -164,11 +165,11 @@ public class AlarmFragment extends Fragment {
     private void AlarmCall() {
         final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        Call<Alarm> alarmCall = networkInterface.getAlarm(storage.getAccessType() + " " + storage.getAccessToken());
-        alarmCall.enqueue(new Callback<Alarm>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+        Call<String> alarmCall = networkInterface.getAlarm(storage.getAccessType() + " " + storage.getAccessToken(), storage.getCurrentMachine());
+        alarmCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<Alarm> call, Response<Alarm> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
                 /*token expiration handling*/
 
@@ -182,33 +183,60 @@ public class AlarmFragment extends Fragment {
 
                 /*end of token expiration */
 
+                if (response.body() != null) {
 
-                Alarm alarm = response.body();
-                if (alarm != null) {
+                    JSONObject jsonObject = null;
+                    try {
 
-                    alarmTime.setText(alarm.getData().getAlarm().getLastUpdate());
 
-                    if (alarm.getData().getAlarm().getStatus() == 1) {
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
 
-                        AlarmON = true;
+                        if (isSuccess) {
+                            Gson gson = new Gson();
+                            Alarm alarm = gson.fromJson(response.body(), Alarm.class);
+                            if (alarm != null) {
 
-                        FocusChangeListener();
+                                alarmTime.setText(alarm.getData().getAlarm().getLastUpdate());
 
-                    } else if (alarm.getData().getAlarm().getStatus() == 0) {
+                                if (alarm.getData().getAlarm().getStatus() == 1) {
 
-                        AlarmON = false;
+                                    AlarmON = true;
 
-                        FocusChangeListener();
+                                    FocusChangeListener();
+
+                                } else if (alarm.getData().getAlarm().getStatus() == 0) {
+
+                                    AlarmON = false;
+
+                                    FocusChangeListener();
+                                }
+                            }
+                            Utility.DismissDialog(flower);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+
+
                 }
 
-                Utility.DismissDialog(flower, getActivity());
+
+                Utility.DismissDialog(flower);
             }
 
             @Override
-            public void onFailure(Call<Alarm> call, Throwable t) {
+            public void onFailure(Call<String> call, Throwable t) {
 
-                Utility.DismissDialog(flower, getActivity());
+                Utility.DismissDialog(flower);
                 if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
                 }
@@ -232,11 +260,12 @@ public class AlarmFragment extends Fragment {
         }
 
         Storage storage = new Storage(getActivity());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        Call<UpdateFeatures> updateFeaturesCall = networkInterface.PostAlarmUpdate(storage.getAccessType() + " " + storage.getAccessToken(), status);
-        updateFeaturesCall.enqueue(new Callback<UpdateFeatures>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+
+        Call<String> updateFeaturesCall = networkInterface.PostAlarmUpdate(storage.getAccessType() + " " + storage.getAccessToken(), status, storage.getCurrentMachine());
+        updateFeaturesCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
 
                 /*token expiration handling*/
@@ -251,19 +280,43 @@ public class AlarmFragment extends Fragment {
 
                 /*end of token expiration */
 
-                UpdateFeatures features = response.body();
+                if (response.body() != null) {
 
-                if (features != null) {
+                    JSONObject jsonObject = null;
+                    try {
 
-                    Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
+
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+
+                            Gson gson = new Gson();
+                            UpdateFeatures machine = gson.fromJson(response.body(), UpdateFeatures.class);
+                            Toast.makeText(getActivity(), machine.getMessage(), Toast.LENGTH_SHORT).show();
+                            Utility.DismissDialog(flower);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
 
-                Utility.DismissDialog(flower, getActivity());
+                Utility.DismissDialog(flower);
             }
 
             @Override
-            public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-                Utility.DismissDialog(flower, getActivity());
+            public void onFailure(Call<String> call, Throwable t) {
+                Utility.DismissDialog(flower);
                 if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
                 }

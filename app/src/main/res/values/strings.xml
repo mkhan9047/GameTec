@@ -17,7 +17,7 @@
     <string name="block">BLOCK</string>
     <string name="bluetooth">BLUETOOTH</string>
     <string name="clock">CLOCK</string>
-    <string name="door">DOOR</string>
+    <string name="door">DOOR OPENING</string>
     <string name="close">CLOSE</string>
     <string name="open">OPEN</string>
     <string name="gps">GPS</string>
@@ -27,7 +27,7 @@
     <string name="reset">RESET</string>
     <string name="reset_machine">Reset Machine</string>
     <string name="last_reset">LAST RESET</string>
-    <string name="ticket">TICKET</string>
+    <string name="ticket">TICKETS</string>
     <string name="month_total">MONTH TOTAL</string>
     <string name="session_expired">Session Expired, Log in Again!</string>
     <string name="connection_timeout">Connection Timeout! Try Again</string>
@@ -40,7 +40,21 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
 
+    <string name="pin_digit">Pin should be 4 digits</string>
+    <string name="pint_set_success">Your Pin is set successfully</string>
+    <string name="incorrect_pin">You\'ve typed incorrect pin</string>
+    <string name="set_your_pin">SET YOUR PIN</string>
+    <string name="set_digit_pin">SET-4 DIGIT PIN</string>
+    <string name="set">SET</string>
+    <string name="verify">Verify</string>
+    <string name="insert_your_pin">INSERT YOUR PIN</string>
+    <string name="touch_fingerprint">Touch the fingerprint sensor!</string>
+    <string name="cancel">Cancel</string>
+    <string name="unblock">UNBLOCK</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="bluetooh_already_enabled">Bluetooth Already Enabled!</string>
+    <string name="bluetooth_not_support">Bluetooth Not Supported!</string>
 
 </resources>

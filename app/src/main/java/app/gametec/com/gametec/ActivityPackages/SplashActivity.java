@@ -18,6 +18,8 @@ import android.view.WindowManager;
 
 import javax.security.auth.login.LoginException;
 
+import app.gametec.com.gametec.DialogPackage.FingerPrintDialog;
+import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.SignIn;
 import app.gametec.com.gametec.R;
@@ -28,7 +30,6 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
             w.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
@@ -53,10 +54,10 @@ public class SplashActivity extends AppCompatActivity {
 
                 Storage storage = new Storage(SplashActivity.this);
 
-                if (storage.getLogInState()) {
+            /*    if (storage.getLogInState()) {
 
                     Intent intent = new Intent(SplashActivity.this, FragmentContainerActivity.class);
-                    intent.putExtra("flag", "machine");
+                    intent.putExtra("flag", "admin");
                     startActivity(intent);
                     overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
 
@@ -65,7 +66,33 @@ public class SplashActivity extends AppCompatActivity {
                     startActivity(new Intent(SplashActivity.this, SignInActivity.class));
                     overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
 
+                }*/
+
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                    if(Utility.checkFingerprintSettings(SplashActivity.this)){
+
+                        Intent intent = new Intent(SplashActivity.this, AuthnicateActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("has", "finger_print");
+                        intent.putExtra("FROMBG", false);
+                        startActivity(intent);
+                        finish();
+                        overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
+
+                    }
+                    else{
+                        Intent intent = new Intent(SplashActivity.this, AuthnicateActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("FROMBG", false);
+                        startActivity(intent);
+                        finish();
+                        overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
+
+                    }
                 }
+
 
 
             }

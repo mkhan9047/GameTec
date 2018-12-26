@@ -2,11 +2,9 @@ package app.gametec.com.gametec.FragmentsPackages;
 
 
 import android.content.Intent;
-import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +14,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.SocketTimeoutException;
 import java.util.Objects;
@@ -107,13 +108,13 @@ public class PercentFragement extends Fragment {
 
     private void getPercent() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
+        final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         Storage storage = new Storage(getContext());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        Call<PercentControl> percentControlCall = networkInterface.getPercent(storage.getAccessType() + " " + storage.getAccessToken());
-        percentControlCall.enqueue(new Callback<PercentControl>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+        Call<String> percentControlCall = networkInterface.getPercent(storage.getAccessType() + " " + storage.getAccessToken(), storage.getCurrentMachine());
+        percentControlCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<PercentControl> call, Response<PercentControl> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
                 /*token expiration handling*/
 
@@ -126,21 +127,50 @@ public class PercentFragement extends Fragment {
                 }
 
                 /*end of token expiration */
+                if (response.body() != null) {
 
-                PercentControl control = response.body();
-                if (control != null) {
-                    client.setText(control.getData().getPercentControl().getUser());
-                    machine.setText(control.getData().getPercentControl().getMachine());
-                    last_update_time.setText(control.getData().getPercentControl().getLastUpdate());
+                    JSONObject jsonObject = null;
+                    try {
+
+
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+
+                            Gson gson = new Gson();
+                            PercentControl control = gson.fromJson(response.body(), PercentControl.class);
+                            if (control != null) {
+                                client.setText(control.getData().getPercentControl().getUser());
+                                machine.setText(control.getData().getPercentControl().getMachine());
+                                last_update_time.setText(control.getData().getPercentControl().getLastUpdate());
+                            }
+
+                            Utility.DismissDialog(flower);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
 
-                Utility.DismissDialog(flower, getContext());
+
+                Utility.DismissDialog(flower);
             }
 
             @Override
-            public void onFailure(Call<PercentControl> call, Throwable t) {
+            public void onFailure(Call<String> call, Throwable t) {
 
-                Utility.DismissDialog(flower, getActivity());
+                Utility.DismissDialog(flower);
                 if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
                 }
@@ -151,14 +181,14 @@ public class PercentFragement extends Fragment {
 
     private void PostPercentControl() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
+        final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
 
         Storage storage = new Storage(getActivity());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        Call<UpdateFeatures> updateFeaturesCall = networkInterface.PostPercentControl(storage.getAccessType() + " " + storage.getAccessToken());
-        updateFeaturesCall.enqueue(new Callback<UpdateFeatures>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+        Call<String> updateFeaturesCall = networkInterface.PostPercentControl(storage.getAccessType() + " " + storage.getAccessToken(), storage.getCurrentMachine());
+        updateFeaturesCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
                 /*token expiration handling*/
 
@@ -171,20 +201,43 @@ public class PercentFragement extends Fragment {
                 }
 
                 /*end of token expiration */
+                if (response.body() != null) {
 
-                UpdateFeatures features = response.body();
+                    JSONObject jsonObject = null;
+                    try {
 
-                if (features != null) {
 
-                    Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+
+                            Gson gson = new Gson();
+                            UpdateFeatures machine = gson.fromJson(response.body(), UpdateFeatures.class);
+                            Toast.makeText(getActivity(), machine.getMessage(), Toast.LENGTH_SHORT).show();
+                            Utility.DismissDialog(flower);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
 
-                Utility.DismissDialog(flower, getActivity());
+                Utility.DismissDialog(flower);
             }
 
             @Override
-            public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-                Utility.DismissDialog(flower, getActivity());
+            public void onFailure(Call<String> call, Throwable t) {
+                Utility.DismissDialog(flower);
                 if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
                 }

@@ -81,7 +81,7 @@ public class FeatureListAdapter extends RecyclerView.Adapter<FeatureListAdapter.
                     intent.putExtra("flag", featuresItems.get(getAdapterPosition()).getSlug());
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     context.startActivity(intent);
-                    context.overridePendingTransition( R.anim.left_to_right, R.anim.right_to_left );
+                    context.overridePendingTransition( R.anim.right_to_left, R.anim.left_to_right );
                 }
             });
         }

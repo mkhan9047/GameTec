@@ -4,9 +4,7 @@ package app.gametec.com.gametec.FragmentsPackages;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.ThemedSpinnerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +19,10 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.SocketTimeoutException;
 import java.util.Objects;
@@ -28,6 +30,7 @@ import java.util.Objects;
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
+import app.gametec.com.gametec.ModelPackages.Door;
 import app.gametec.com.gametec.ModelPackages.Location;
 import app.gametec.com.gametec.ModelPackages.UpdateFeatures;
 import app.gametec.com.gametec.Networking.NetworkInterface;
@@ -125,40 +128,69 @@ public class GpsFragment extends Fragment implements OnMapReadyCallback {
 
 
     private void getLocation() {
-        final ACProgressFlower   flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
+        final ACProgressFlower   flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         Storage storage = new Storage(getContext());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        Call<Location> locationCall = networkInterface.getLocation(storage.getAccessType() + " " + storage.getAccessToken());
-        locationCall.enqueue(new Callback<Location>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+        Call<String> locationCall = networkInterface.getLocation(storage.getAccessType() + " " + storage.getAccessToken(), storage.getCurrentMachine());
+        locationCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<Location> call, Response<Location> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
-                Location location = response.body();
+                if (response.body() != null) {
 
-                if (location != null) {
+                    JSONObject jsonObject = null;
+                    try {
 
-                    latLng = new LatLng(Double.parseDouble(location.getData().getGps().getLatitude()), Double.parseDouble(location.getData().getGps().getLongitude()));
 
-                    map.addMarker(new MarkerOptions().position(latLng));
-                    /**
-                     * moving camera of the map to the marker point lat and long
-                     */
-                    map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
 
-                    /**
-                     * setting up zoom setting the map
-                     */
-                    map.setMinZoomPreference(10);
-                    map.setMaxZoomPreference(15);
+                        if (isSuccess) {
 
-                    last_update_time.setText(location.getData().getGps().getLastUpdate());
+                            Gson gson = new Gson();
+
+                            Location location = gson.fromJson(response.body(), Location.class);
+                            if (location != null) {
+
+                                latLng = new LatLng(Double.parseDouble(location.getData().getGps().getLatitude()), Double.parseDouble(location.getData().getGps().getLongitude()));
+
+                                map.addMarker(new MarkerOptions().position(latLng));
+                                /**
+                                 * moving camera of the map to the marker point lat and long
+                                 */
+                                map.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+                                /**
+                                 * setting up zoom setting the map
+                                 */
+                                map.setMinZoomPreference(10);
+                                map.setMaxZoomPreference(15);
+
+                                last_update_time.setText(location.getData().getGps().getLastUpdate());
+                            }
+                            Utility.DismissDialog(flower);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
-                Utility.DismissDialog(flower, getContext());
+
+                Utility.DismissDialog(flower);
             }
 
             @Override
-            public void onFailure(Call<Location> call, Throwable t) {
-                Utility.DismissDialog(flower, getActivity());
+            public void onFailure(Call<String> call, Throwable t) {
+                Utility.DismissDialog(flower);
                 if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
                 }
@@ -169,27 +201,51 @@ public class GpsFragment extends Fragment implements OnMapReadyCallback {
 
     private void PostGpsUpdate() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
+        final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        Call<UpdateFeatures> updateFeaturesCall = networkInterface.PostGpsUpdate(storage.getAccessType() + " " + storage.getAccessToken());
-        updateFeaturesCall.enqueue(new Callback<UpdateFeatures>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+        Call<String> updateFeaturesCall = networkInterface.PostGpsUpdate(storage.getAccessType() + " " + storage.getAccessToken(), storage.getCurrentMachine());
+        updateFeaturesCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
-                UpdateFeatures features = response.body();
+                if (response.body() != null) {
 
-                if (features != null) {
+                    JSONObject jsonObject = null;
+                    try {
 
-                    Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
+
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+
+                            Gson gson = new Gson();
+                            UpdateFeatures machine = gson.fromJson(response.body(), UpdateFeatures.class);
+                            Toast.makeText(getActivity(), machine.getMessage(), Toast.LENGTH_SHORT).show();
+                            Utility.DismissDialog(flower);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
 
-                Utility.DismissDialog(flower, getActivity());
+                Utility.DismissDialog(flower);
             }
 
             @Override
-            public void onFailure(Call<UpdateFeatures> call, Throwable t) {
-                Utility.DismissDialog(flower, getActivity());
+            public void onFailure(Call<String> call, Throwable t) {
+                Utility.DismissDialog(flower);
                 if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
                 }

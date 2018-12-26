@@ -1,14 +1,10 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,21 +12,25 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.SocketTimeoutException;
-import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
 import app.gametec.com.gametec.ActivityPackages.SignInActivity;
 import app.gametec.com.gametec.AdapterPackages.FeatureListAdapter;
+import app.gametec.com.gametec.AdapterPackages.MachineListAdapter;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
 import app.gametec.com.gametec.ModelPackages.Features;
-import app.gametec.com.gametec.ModelPackages.SignIn;
+import app.gametec.com.gametec.ModelPackages.Machine;
 import app.gametec.com.gametec.Networking.NetworkInterface;
 import app.gametec.com.gametec.Networking.RetrofitClient;
 import app.gametec.com.gametec.R;
@@ -49,8 +49,8 @@ public class AdminFragment extends Fragment {
     RecyclerView featureRecycler;
     FeatureListAdapter adapter;
     Fragment fragment;
-    TextView role;
-    ImageButton machine_reload;
+    TextView role, machine_name;
+    ImageButton machine_reload, networkSwitch;
 
 
     public AdminFragment() {
@@ -74,33 +74,29 @@ public class AdminFragment extends Fragment {
 
         Storage storage = new Storage(getActivity());
 
-        Log.d("current_machine", String.valueOf(storage.getCurrentMachine()));
-
-      /*  if (view != null) {
-
-            balance = view.findViewById(R.id.btn_balance);
-            alarm = view.findViewById(R.id.btn_alarm);
-            ticket = view.findViewById(R.id.btn_ticket);
-            gps = view.findViewById(R.id.btn_gps);
-            clock = view.findViewById(R.id.btn_clock);
-            door = view.findViewById(R.id.btn_door);
-            block = view.findViewById(R.id.btn_block);
-            percent = view.findViewById(R.id.btn_percent);
-            reset = view.findViewById(R.id.btn_reset);
-            bluetooth = view.findViewById(R.id.btn_bluetooth);
-            signOut = view.findViewById(R.id.btn_sign_out);
-
-        }
-*/
 
         if (view != null) {
 
+            networkSwitch = view.findViewById(R.id.change_network_type);
             role = view.findViewById(R.id.role);
             featureRecycler = view.findViewById(R.id.feature_recylerview);
             machine_reload = view.findViewById(R.id.machine_reload);
+            machine_name = view.findViewById(R.id.machine_name);
 
         }
 
+
+        machine_name.setText(storage.getCurrentMachineName().toUpperCase());
+
+        networkSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Activity activity = getActivity();
+                if (activity != null) {
+                    ((FragmentContainerActivity) activity).FragmentTransition(new ChangeNetworkModuleFragment());
+                }
+            }
+        });
 
         machine_reload.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -247,17 +243,17 @@ public class AdminFragment extends Fragment {
 
     private void FeaturesCall() {
 
-        final ACProgressFlower dialog = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
+        final ACProgressFlower dialog = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
 
         final Storage storage = new Storage(getContext());
 
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
 
-        Call<Features> featuresCall = networkInterface.getFeatures(storage.getAccessType() + " " + storage.getAccessToken());
+        Call<String> featuresCall = networkInterface.getFeatures(storage.getAccessType() + " " + storage.getAccessToken());
 
-        featuresCall.enqueue(new Callback<Features>() {
+        featuresCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<Features> call, Response<Features> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
                 /*token expiration handling*/
 
@@ -271,29 +267,77 @@ public class AdminFragment extends Fragment {
 
                 /*end of token expiration */
 
-                Features features = response.body();
-
-                if (features != null) {
 
 
-                    adapter = new FeatureListAdapter(features.getData().getFeatures(), getActivity());
+         /*       if (response.body() != null) {
 
-                    Utility.DismissDialog(dialog, getActivity());
 
-                    featureRecycler.setAdapter(adapter);
+
+                    if (features.isSuccess()) {
+                        adapter = new FeatureListAdapter(features.getData().getFeatures(), getActivity());
+
+                        Utility.DismissDialog(dialog);
+
+                        featureRecycler.setAdapter(adapter);
+                    } else {
+
+                        Utility.DismissDialog(dialog);
+                        Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+
+                }*/
+
+                if (response.body() != null) {
+
+                    JSONObject jsonObject = null;
+                    try {
+
+
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+                            Gson gson = new Gson();
+                            Features features = gson.fromJson(response.body(), Features.class);
+                            FeatureListAdapter adapter =new FeatureListAdapter(features.getData().getFeatures(), getActivity());
+                            featureRecycler.setAdapter(adapter);
+                            Utility.DismissDialog(dialog);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(dialog);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
 
                 }
 
-            }
+}
 
             @Override
-            public void onFailure(Call<Features> call, Throwable t) {
-                Utility.DismissDialog(dialog, getActivity());
-                if (t instanceof SocketTimeoutException) {
+            public void onFailure(Call<String> call, Throwable t) {
+
+                Utility.DismissDialog(dialog);
+                if(t instanceof SocketTimeoutException){
+
+                    if(getActivity()!= null && isAdded())
+                    Utility.DismissDialog(dialog);
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+
                 }
+
             }
+
+
         });
+
     }
+
 }

@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,17 +15,23 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.SocketTimeoutException;
 import java.util.Objects;
 
 import app.gametec.com.gametec.ActivityPackages.FragmentContainerActivity;
 import app.gametec.com.gametec.ActivityPackages.SignInActivity;
+import app.gametec.com.gametec.AdapterPackages.FeatureListAdapter;
+import app.gametec.com.gametec.AdapterPackages.MachineListAdapter;
 import app.gametec.com.gametec.Helper.Utility;
 import app.gametec.com.gametec.LocalStorage.Storage;
-import app.gametec.com.gametec.ModelPackages.Alarm;
 import app.gametec.com.gametec.ModelPackages.Balance;
+import app.gametec.com.gametec.ModelPackages.Features;
+import app.gametec.com.gametec.ModelPackages.Machine;
 import app.gametec.com.gametec.ModelPackages.UpdateFeatures;
 import app.gametec.com.gametec.Networking.NetworkInterface;
 import app.gametec.com.gametec.Networking.RetrofitClient;
@@ -71,11 +78,11 @@ public class BalanceFragment extends Fragment {
             }
         });
 
-        if(Utility.isInternetAvailable(getContext())){
+        if (Utility.isInternetAvailable(getContext())) {
 
             BalanceCall();
 
-        }else{
+        } else {
 
             Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
 
@@ -86,11 +93,11 @@ public class BalanceFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                if(Utility.isInternetAvailable(getContext())){
+                if (Utility.isInternetAvailable(getContext())) {
 
-                PostBalanceUpdate();
+                    PostBalanceUpdate();
 
-                }else{
+                } else {
 
                     Toast.makeText(getContext(), R.string.no_internet, Toast.LENGTH_SHORT).show();
 
@@ -120,42 +127,63 @@ public class BalanceFragment extends Fragment {
 
     private void BalanceCall() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
+        final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        Call<Balance> alarmCall = networkInterface.getBalance(storage.getAccessType() + " " + storage.getAccessToken());
-        alarmCall.enqueue(new Callback<Balance>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+        Call<String> alarmCall = networkInterface.getBalance(storage.getAccessType() + " " + storage.getAccessToken(), storage.getCurrentMachine());
+        alarmCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<Balance> call, Response<Balance> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
                 /*token expiration handling*/
 
-                switch (response.code()){
+                switch (response.code()) {
                     case 401:
                         Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(getActivity(), SignInActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                 }
 
-                /*end of token expiration */
+                if (response.body() != null) {
+
+                    JSONObject jsonObject = null;
+                    try {
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+                            Gson gson = new Gson();
+                            Balance balance = gson.fromJson(response.body(), Balance.class);
+                            if (balance != null) {
+                                in.setText(balance.getData().getBalance().getIn());
+                                out.setText(balance.getData().getBalance().getOut());
+                                total.setText(balance.getData().getBalance().getTotal());
+                                last_update_time.setText(balance.getData().getBalance().getLastUpdate());
+                            }
+                            Utility.DismissDialog(flower);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+                        }
 
 
-                Balance balance = response.body();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
-                if (balance != null) {
-                    in.setText(balance.getData().getBalance().getIn());
-                    out.setText(balance.getData().getBalance().getOut());
-                    total.setText(balance.getData().getBalance().getTotal());
-                    last_update_time.setText(balance.getData().getBalance().getLastUpdate());
+
                 }
 
-                Utility.DismissDialog(flower, getContext());
+                Utility.DismissDialog(flower);
             }
 
             @Override
-            public void onFailure(Call<Balance> call, Throwable t) {
-                Utility.DismissDialog(flower, getActivity());
-                if(t instanceof SocketTimeoutException){
+            public void onFailure(Call<String> call, Throwable t) {
+                Utility.DismissDialog(flower);
+                if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -165,40 +193,70 @@ public class BalanceFragment extends Fragment {
 
     private void PostBalanceUpdate() {
 
-        final ACProgressFlower flower = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
+        final ACProgressFlower flower = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
         Storage storage = new Storage(getActivity());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        Call<UpdateFeatures> updateFeaturesCall = networkInterface.PostBalanceUpdate(storage.getAccessType() + " " + storage.getAccessToken());
-        updateFeaturesCall.enqueue(new Callback<UpdateFeatures>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+        Call<String> updateFeaturesCall = networkInterface.PostBalanceUpdate(storage.getAccessType() + " " + storage.getAccessToken(), storage.getCurrentMachine());
+        updateFeaturesCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<UpdateFeatures> call, Response<UpdateFeatures> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
                 /*token expiration handling*/
 
-                switch (response.code()){
+                switch (response.code()) {
                     case 401:
                         Toast.makeText(getActivity(), R.string.session_expired, Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(getActivity(), SignInActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                 }
 
-                /*end of token expiration */
-                UpdateFeatures features = response.body();
 
-                if (features != null) {
 
-                    Toast.makeText(getActivity(), features.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("res", response.body());
+
+                if (response.body() != null) {
+
+                    JSONObject jsonObject = null;
+                    try {
+
+
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+
+                            Gson gson = new Gson();
+                            UpdateFeatures machine = gson.fromJson(response.body(), UpdateFeatures.class);
+                            Toast.makeText(getActivity(), machine.getMessage(), Toast.LENGTH_SHORT).show();
+                            Utility.DismissDialog(flower);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(flower);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
 
-                Utility.DismissDialog(flower, getActivity());
+
+
+
+
             }
 
             @Override
-            public void onFailure(Call<UpdateFeatures> call, Throwable t) {
+            public void onFailure(Call<String> call, Throwable t) {
 
-                Utility.DismissDialog(flower, getActivity());
-                if(t instanceof SocketTimeoutException){
+                Utility.DismissDialog(flower);
+                if (t instanceof SocketTimeoutException) {
                     Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
                 }
             }

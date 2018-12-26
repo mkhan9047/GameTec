@@ -1,15 +1,11 @@
 package app.gametec.com.gametec.ActivityPackages;
 
-import android.animation.LayoutTransition;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.icu.util.UniversalTimeScale;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.transition.Transition;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -32,6 +28,7 @@ import retrofit2.Response;
 public class SignInActivity extends AppCompatActivity {
 
     EditText email, password;
+    private boolean wasInBackground = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,12 +127,12 @@ public class SignInActivity extends AppCompatActivity {
 
                             GOtoDash();
 
-                            Utility.DismissDialog(dialog, SignInActivity.this);
+                            Utility.DismissDialog(dialog);
 
                         } else {
 
                             Toast.makeText(SignInActivity.this, message, Toast.LENGTH_SHORT).show();
-                            Utility.DismissDialog(dialog, SignInActivity.this);
+                            Utility.DismissDialog(dialog);
                         }
 
                     } catch (JSONException e) {
@@ -182,16 +179,18 @@ public class SignInActivity extends AppCompatActivity {
 
     private void GOtoDash() {
         Intent intent = new Intent(this, FragmentContainerActivity.class);
+        intent.putExtra("flag", "machine");
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         finish();
         startActivity(intent);
-        overridePendingTransition(R.anim.left_to_right, R.anim.right_to_left);
+        overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
 
     }
 
     private void InitView() {
         email = findViewById(R.id.user_name);
         password = findViewById(R.id.password);
+
     }
 
 
@@ -203,5 +202,46 @@ public class SignInActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
 
+        super.onResume();
+
+        if(wasInBackground){
+
+            wasInBackground =false;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                if(Utility.checkFingerprintSettings(SignInActivity.this)){
+
+                    Intent intent = new Intent(SignInActivity.this, AuthnicateActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra("has", "finger_print");
+                    startActivity(intent);
+                    finish();
+                    //overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
+
+                }
+                else{
+                    Intent intent = new Intent(SignInActivity.this, AuthnicateActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                    //overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
+
+                }
+            }
+
+        }
+
+
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        wasInBackground = true;
+    }
 }

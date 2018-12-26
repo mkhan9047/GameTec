@@ -1,15 +1,22 @@
 package app.gametec.com.gametec.FragmentsPackages;
 
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.SocketTimeoutException;
 
@@ -77,33 +84,61 @@ public class MachineFragment extends Fragment {
 
     private void getMachineList() {
 
-        final ACProgressFlower dialog = Utility.StartProgressDialog(getContext(), getString(R.string.loading));
+        final ACProgressFlower dialog = Utility.StartProgressDialog(getActivity(), getString(R.string.loading));
+
         Storage storage = new Storage(getActivity());
-        NetworkInterface networkInterface = RetrofitClient.getRetrofit().create(NetworkInterface.class);
-        final Call<Machine> machineCall = networkInterface.getMachineList(storage.getAccessType() + " " + storage.getAccessToken());
-        machineCall.enqueue(new Callback<Machine>() {
+        NetworkInterface networkInterface = RetrofitClient.getRetrofitOfScalar().create(NetworkInterface.class);
+
+        final Call<String> machineCall = networkInterface.getMachineList(storage.getAccessType() + " " + storage.getAccessToken());
+        machineCall.enqueue(new Callback<String>() {
             @Override
-            public void onResponse(Call<Machine> call, Response<Machine> response) {
+            public void onResponse(Call<String> call, Response<String> response) {
 
-                Machine machine = response.body();
+                if (response.body() != null) {
 
-                if (machine != null) {
+                    JSONObject jsonObject = null;
+                    try {
 
-                    MachineListAdapter adapter = new MachineListAdapter(machine.getData().getMachines(), getActivity());
-                    machineRecycler.setAdapter(adapter);
-                    Utility.DismissDialog(dialog, getActivity());
+
+                        jsonObject = new JSONObject(response.body());
+                        boolean isSuccess = jsonObject.getBoolean("success");
+                        String message = jsonObject.getString("message");
+
+                        if (isSuccess) {
+                            Gson gson = new Gson();
+                            Machine machine = gson.fromJson(response.body(), Machine.class);
+                            MachineListAdapter adapter = new MachineListAdapter(machine.getData().getMachines(), getActivity());
+                            machineRecycler.setAdapter(adapter);
+                            Utility.DismissDialog(dialog);
+
+                        } else {
+
+                            Utility.showDialog(getActivity(), message);
+                            Utility.DismissDialog(dialog);
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
-
-                Utility.DismissDialog(dialog, getActivity());
+                Utility.DismissDialog(dialog);
 
             }
 
             @Override
-            public void onFailure(Call<Machine> call, Throwable t) {
-                Utility.DismissDialog(dialog, getActivity());
-                if (t instanceof SocketTimeoutException) {
-                    Toast.makeText(getActivity(), R.string.connection_timeout, Toast.LENGTH_SHORT).show();
+            public void onFailure(Call<String> call, Throwable t) {
+                Activity activiy = getActivity();
+                if (activiy != null && isAdded()) {
+                    Utility.DismissDialog(dialog);
+                    if (t instanceof SocketTimeoutException) {
+                        Utility.DismissDialog(dialog);
+                        Toast.makeText(activiy, getString(R.string.connection_timeout), Toast.LENGTH_SHORT).show();
+                    }
                 }
+
             }
         });
 

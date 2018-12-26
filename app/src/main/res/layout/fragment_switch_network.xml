@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FragmentsPackages.SwitchNetworkFragment">
+
+    <ImageView
+        android:id="@+id/main_logo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="22dp"
+        android:src="@drawable/logo" />
+
+    <LinearLayout
+        android:id="@+id/middle_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/last_update"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/btn_gsm"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginEnd="22dp"
+            android:layout_marginStart="22dp"
+            android:background="@drawable/btn_border"
+            android:foreground="?selectableItemBackground"
+            android:text="GSM" />
+
+        <Button
+            android:id="@+id/btn_bluetooth"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginEnd="22dp"
+            android:layout_marginStart="22dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/btn_border"
+            android:foreground="?selectableItemBackground"
+            android:text="Bluetooth" />
+
+
+    </LinearLayout>
+
+
+
+</RelativeLayout>
