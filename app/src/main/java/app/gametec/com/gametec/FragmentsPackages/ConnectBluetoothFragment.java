@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -27,10 +28,10 @@ import app.gametec.com.gametec.R;
  */
 public class ConnectBluetoothFragment extends Fragment {
 
-    Button turnOnBluetooth;
+    Button turnOnBluetooth, turnOffBluetooth;
     Button pairBluetooth;
     Switch btStatus;
-    Button btn_back;
+    ImageButton btn_back;
     BroadcastReceiver bluetoothStatuReceiver;
 
     Activity activity;
@@ -81,6 +82,20 @@ public class ConnectBluetoothFragment extends Fragment {
             }
         });
 
+        turnOffBluetooth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (adapter != null) {
+                    if (adapter.isEnabled()) {
+                        adapter.disable();
+                    }
+
+                } else {
+                    Toast.makeText(activity, R.string.bluetooth_not_support, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
         pairBluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -107,9 +122,12 @@ public class ConnectBluetoothFragment extends Fragment {
 
         if (adapter != null)
             if (adapter.isEnabled()) {
+                turnOnBluetooth.setVisibility(View.GONE);
+                turnOffBluetooth.setVisibility(View.VISIBLE);
                 btStatus.setChecked(true);
             } else {
-
+                turnOnBluetooth.setVisibility(View.VISIBLE);
+                turnOffBluetooth.setVisibility(View.GONE);
                 btStatus.setChecked(false);
 
             }
@@ -123,9 +141,13 @@ public class ConnectBluetoothFragment extends Fragment {
                     if (intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1)
                             == BluetoothAdapter.STATE_OFF) {
 
+                        turnOnBluetooth.setVisibility(View.VISIBLE);
+                        turnOffBluetooth.setVisibility(View.GONE);
                         btStatus.setChecked(false);
                     } else {
 
+                        turnOnBluetooth.setVisibility(View.GONE);
+                        turnOffBluetooth.setVisibility(View.VISIBLE);
                         btStatus.setChecked(true);
                     }
                 }
@@ -153,6 +175,7 @@ public class ConnectBluetoothFragment extends Fragment {
         if (view != null) {
             btn_back = view.findViewById(R.id.btn_back);
             turnOnBluetooth = view.findViewById(R.id.btn_turn_on_bluetooth);
+            turnOffBluetooth = view.findViewById(R.id.btn_turn_off_bluetooth);
             pairBluetooth = view.findViewById(R.id.btn_pair_bluetooth);
             btStatus = view.findViewById(R.id.swt_status);
         }

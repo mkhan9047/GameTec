@@ -44,5 +44,8 @@
     <string name="insert_your_pin">INSERT YOUR PIN</string>
     <string name="touch_fingerprint">Touch the fingerprint sensor!</string>
     <string name="cancel">Cancel</string>
-
+    <string name="percent_empty">Insira a percentagem</string>
+    <string name="invalid_percentenge">Percentagem inválida</string>
+    <string name="set_machine_percentage">SDefinir percentagem da máquina</string>
+    <string name="change_percentage">Alterar percentagem</string>
 </resources>

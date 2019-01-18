@@ -15,6 +15,7 @@ import app.gametec.com.gametec.FragmentsPackages.BalanceFragment;
 import app.gametec.com.gametec.FragmentsPackages.BlockFragment;
 import app.gametec.com.gametec.FragmentsPackages.BluetoothFragment;
 import app.gametec.com.gametec.FragmentsPackages.ClockFragment;
+import app.gametec.com.gametec.FragmentsPackages.ConnectBluetoothFragment;
 import app.gametec.com.gametec.FragmentsPackages.DoorFragment;
 import app.gametec.com.gametec.FragmentsPackages.GpsFragment;
 import app.gametec.com.gametec.FragmentsPackages.MachineFragment;
@@ -52,7 +53,6 @@ public class FragmentContainerActivity extends AppCompatActivity {
         flag = getIntent().getStringExtra("flag");
 
         if (flag != null) {
-
             Log.d("MKFalg", flag);
             MakeTransactionFromIntent(flag);
         }
@@ -184,7 +184,7 @@ public class FragmentContainerActivity extends AppCompatActivity {
                 break;
 
             case "percent_control":
-               flag = null;
+                flag = null;
                 currentFragment = new PercentFragement();
                 FragmentTransition();
                 break;
@@ -221,31 +221,35 @@ public class FragmentContainerActivity extends AppCompatActivity {
 
         super.onResume();
 
-        if(wasInBackground){
-            wasInBackground =false;
+        if (!(currentFragment instanceof ConnectBluetoothFragment)) {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (wasInBackground) {
 
-                if(Utility.checkFingerprintSettings(FragmentContainerActivity.this)){
+                wasInBackground = false;
 
-                    Intent intent = new Intent(FragmentContainerActivity.this, AuthnicateActivity.class);
-                    intent.putExtra("FROMBG", true);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("has", "finger_print");
-                    startActivity(intent);
-                    finish();
-                    //overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
+                    if (Utility.checkFingerprintSettings(FragmentContainerActivity.this)) {
+
+                        Intent intent = new Intent(FragmentContainerActivity.this, AuthnicateActivity.class);
+                        intent.putExtra("FROMBG", true);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("has", "finger_print");
+                        startActivity(intent);
+                        finish();
+                        //overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
+
+                    } else {
+                        Intent intent = new Intent(FragmentContainerActivity.this, AuthnicateActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.putExtra("FROMBG", true);
+                        startActivity(intent);
+                        finish();
+                        //overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
+
+                    }
                 }
-                else{
-                    Intent intent = new Intent(FragmentContainerActivity.this, AuthnicateActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra("FROMBG", true);
-                    startActivity(intent);
-                    finish();
-                    //overridePendingTransition(R.anim.right_to_left, R.anim.left_to_right);
 
-                }
             }
 
         }

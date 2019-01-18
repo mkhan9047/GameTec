@@ -56,5 +56,10 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="bluetooh_already_enabled">Bluetooth Already Enabled!</string>
     <string name="bluetooth_not_support">Bluetooth Not Supported!</string>
+    <string name="no_data_found">No Data Found</string>
+    <string name="percent_empty">Percentage can\'t be empty</string>
+    <string name="invalid_percentenge">You\'ve typed invalid percentage</string>
+    <string name="set_machine_percentage">Set machine percentage</string>
+    <string name="change_percentage">CHANGE PERCENTAGE</string>
 
 </resources>

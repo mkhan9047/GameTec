@@ -43,9 +43,6 @@ public class AuthnicateActivity extends AppCompatActivity {
 
         got = getIntent().getStringExtra("has");
 
-        isFromBackgroud = getIntent().getBooleanExtra("FROMBG", false);
-
-        if (isFromBackgroud) {
 
             Storage storage = new Storage(this);
 
@@ -84,9 +81,6 @@ public class AuthnicateActivity extends AppCompatActivity {
 
             }
 
-        } else {
-            FragmentTransition(new SwitchNetworkFragment());
-        }
 
 
     }
@@ -103,12 +97,6 @@ public class AuthnicateActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        if (fragment instanceof ConnectBluetoothFragment || fragment instanceof InsertPinFragment || fragment instanceof SetPinFragment) {
-
-            FragmentTransition(new SwitchNetworkFragment());
-
-        } else {
-
             count++;
 
             switch (count) {
@@ -122,7 +110,7 @@ public class AuthnicateActivity extends AppCompatActivity {
                     break;
             }
 
-        }
+
 
 
     }

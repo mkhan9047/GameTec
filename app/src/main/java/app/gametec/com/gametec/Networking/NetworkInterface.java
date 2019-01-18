@@ -66,12 +66,11 @@ public interface NetworkInterface {
     Call<String> getLocation(@Header("Authorization") String token, @Query("machine_id") int id);
 
 
-
     @POST("api/balance-update")
     Call<String> PostBalanceUpdate(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @POST("api/tickets-update")
-    Call<String> PostTicketUdpate(@Header("Authorization") String token, @Query("machine_id")int id);
+    Call<String> PostTicketUdpate(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @FormUrlEncoded
     @POST("api/alarm-update")
@@ -79,10 +78,10 @@ public interface NetworkInterface {
 
     @FormUrlEncoded
     @POST("api/door-opening-update")
-    Call<String> PostDoorUpdate(@Header("Authorization") String token, @Field("status") int status, @Field("machine_id")int id);
+    Call<String> PostDoorUpdate(@Header("Authorization") String token, @Field("status") int status, @Field("machine_id") int id);
 
     @POST("api/gps-update")
-    Call<String> PostGpsUpdate(@Header("Authorization") String token, @Query("machine_id")int id);
+    Call<String> PostGpsUpdate(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @POST("api/clock-update")
     Call<String> PostClockUpdate(@Header("Authorization") String token, @Query("machine_id") int id);
@@ -92,11 +91,11 @@ public interface NetworkInterface {
     Call<String> PostBlockUpdate(@Header("Authorization") String token, @Field("status") int status, @Field("machine_id") int id);
 
     @POST("api/percent-control-update")
-    Call<String> PostPercentControl(@Header("Authorization") String token, @Query("machine_id")int id);
+    Call<String> PostPercentControl(@Header("Authorization") String token, @Query("machine_id") int id);
 
     @FormUrlEncoded
     @POST("api/bluetooth-update")
-    Call<String> PostBluetoothUpdate(@Header("Authorization") String token, @Field("status") int status,  @Field("machine_id") int id);
+    Call<String> PostBluetoothUpdate(@Header("Authorization") String token, @Field("status") int status, @Field("machine_id") int id);
 
     @FormUrlEncoded
     @POST("api/reset-machine-update")
@@ -104,5 +103,10 @@ public interface NetworkInterface {
 
     @GET("api/user/machines")
     Call<String> getMachineList(@Header("Authorization") String token);
+
+
+    @FormUrlEncoded
+    @POST("api/change-percentage")
+    Call<String> setPercentengeToMachine(@Header("Authorization") String token, @Field("machine_id") int id, @Field("machine_percentage") double number);
 
 }

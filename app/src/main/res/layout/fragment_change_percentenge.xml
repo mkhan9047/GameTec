@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".FragmentsPackages.ChangePercentengeFragment">
+
+    <ImageButton
+        android:id="@+id/back_button"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="22dp"
+        android:background="#00000000"
+        android:foreground="?selectableItemBackground"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/bacl_arrow" />
+
+    <ImageView
+        android:id="@+id/main_logo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="22dp"
+        android:src="@drawable/logo" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="140dp"
+        android:text="CHANGE PERCENTAGE"
+        android:textColor="#000000"
+        android:textSize="17sp" />
+
+    <LinearLayout
+        android:id="@+id/middle_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/main_logo"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/edt_percentenge"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginStart="25dp"
+            android:layout_marginEnd="25dp"
+            android:background="@drawable/border_balck"
+            android:gravity="center"
+            android:hint="@string/set_machine_percentage"
+            android:inputType="numberDecimal"
+            android:singleLine="true"
+            android:textSize="14sp" />
+
+
+        <Button
+            android:id="@+id/btn_percent_update"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginStart="22dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="22dp"
+            android:background="@drawable/green_btn_bg"
+            android:foreground="?selectableItemBackground"
+            android:text="@string/update"
+            android:textColor="@color/colorWhite" />
+
+
+    </LinearLayout>
+
+
+</RelativeLayout>

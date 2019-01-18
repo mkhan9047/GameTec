@@ -93,7 +93,7 @@ public class AdminFragment extends Fragment {
             public void onClick(View view) {
                 Activity activity = getActivity();
                 if (activity != null) {
-                    ((FragmentContainerActivity) activity).FragmentTransition(new ChangeNetworkModuleFragment());
+                    ((FragmentContainerActivity) activity).FragmentTransition(new ConnectBluetoothFragment());
                 }
             }
         });

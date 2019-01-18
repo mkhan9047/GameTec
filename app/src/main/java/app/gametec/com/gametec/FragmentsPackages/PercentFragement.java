@@ -45,7 +45,7 @@ public class PercentFragement extends Fragment {
     ImageButton backButton;
     TextView client, machine;
     TextView last_update_time;
-    Button update_btn;
+    Button update_btn, btn_set_percent;
 
     public PercentFragement() {
         // Required empty public constructor
@@ -67,12 +67,23 @@ public class PercentFragement extends Fragment {
         View view = getView();
 
         if (view != null) {
+            btn_set_percent = view.findViewById(R.id.btn_set_percent);
             backButton = view.findViewById(R.id.back_button);
             client = view.findViewById(R.id.client_percent);
             machine = view.findViewById(R.id.machine_percent);
             last_update_time = view.findViewById(R.id.percent_last_update);
             update_btn = view.findViewById(R.id.percent_update_btn);
         }
+
+
+        btn_set_percent.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    ((FragmentContainerActivity) Objects.requireNonNull(getActivity())).FragmentTransition(new ChangePercentengeFragment());
+                }
+            }
+        });
 
 
         /*back button*/
@@ -130,9 +141,8 @@ public class PercentFragement extends Fragment {
                 if (response.body() != null) {
 
                     JSONObject jsonObject = null;
+
                     try {
-
-
                         jsonObject = new JSONObject(response.body());
                         boolean isSuccess = jsonObject.getBoolean("success");
                         String message = jsonObject.getString("message");
